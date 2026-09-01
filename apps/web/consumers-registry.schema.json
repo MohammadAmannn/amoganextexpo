@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AmogaDSConsumersRegistry",
+  "type": "object",
+  "required": ["version", "consumers"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "consumers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "repository",
+          "defaultBranch",
+          "packagePath",
+          "currentVersion",
+          "updateStatus",
+          "automationStatus"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "repository": { "type": "string" },
+          "defaultBranch": { "type": "string" },
+          "packagePath": { "type": "string" },
+          "currentVersion": { "type": "string" },
+          "targetVersion": { "type": "string" },
+          "updateStatus": {
+            "type": "string",
+            "enum": ["up-to-date", "pending-pr", "upgrade-available", "failed"]
+          },
+          "automationStatus": {
+            "type": "string",
+            "enum": ["enabled", "disabled", "paused"]
+          },
+          "team": { "type": "string" },
+          "lastCheckedAt": { "type": ["string", "null"] },
+          "lastUpgradedAt": { "type": ["string", "null"] },
+          "activePrUrl": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

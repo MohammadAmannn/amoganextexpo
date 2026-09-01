@@ -1,0 +1,7 @@
+{
+  "extends": "../../tooling/typescript/react.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ]
+}

@@ -1,0 +1,69 @@
+name: Cross-Repository Upgrade Automation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+  workflow_call:
+    inputs:
+      target_version:
+        required: false
+        type: string
+      release_notes:
+        required: false
+        type: string
+        default: 'New @mohdaman/ui version released.'
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: 'Target @mohdaman/ui version (leave blank to use version in package.json)'
+        required: false
+        type: string
+      release_notes:
+        description: 'Release notes or summary'
+        required: false
+        type: string
+        default: 'Manual trigger for @mohdaman/ui upgrade'
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  upgrade-consumers:
+    name: Dispatch Upgrade PRs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AmogaDS Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate GitHub App Installation Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true # Fallback when using personal access token or secrets
+        with:
+          app-id: ${{ secrets.AMOGA_UPGRADE_APP_ID }}
+          private-key: ${{ secrets.AMOGA_UPGRADE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Execute Controlled Cross-Repository Upgrade
+        env:
+          TARGET_VERSION: ${{ inputs.target_version }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token || secrets.AMOGA_UPGRADE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🚀 Initiating cross-repository upgrade for @mohdaman/ui..."
+          node scripts/upgrade-consumers.mjs
+
+      - name: Track and Log Consumer Status
+        run: |
+          node scripts/track-consumers.mjs

@@ -1,0 +1,50 @@
+{
+  "name": "amogads",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "turbo dev --parallel",
+    "dev:web": "pnpm --dir apps/web dev",
+    "dev:mobile": "pnpm --dir apps/mobile start",
+    "build": "turbo build",
+    "build:web": "pnpm --dir apps/web build",
+    "check": "turbo lint typecheck test",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "mobile:doctor": "pnpm --dir apps/mobile doctor",
+    "mobile:android": "pnpm --dir apps/mobile android",
+    "mobile:ios": "pnpm --dir apps/mobile ios",
+    "eas:preview:android": "cd apps/mobile && pnpm exec eas build --profile preview --platform android",
+    "eas:production": "cd apps/mobile && pnpm exec eas build --profile production --platform all",
+    "rnr:add:all": "cd apps/mobile && pnpm exec @react-native-reusables/cli@latest add --all --styling-library nativewind -y",
+    "supabase:start": "pnpm dlx supabase@latest start",
+    "supabase:stop": "pnpm dlx supabase@latest stop",
+    "supabase:reset": "pnpm dlx supabase@latest db reset",
+    "db:types": "pnpm dlx supabase@latest gen types typescript --local > packages/types/src/database.generated.ts",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "setup": "pnpm install && pnpm --dir apps/mobile fix:sdk",
+    "verify:preserved": "node scripts/verify-preserved-source.mjs",
+    "postinstall": "node scripts/patch-expo.mjs",
+    "share:mobile": "node scripts/share-ngrok.mjs"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0"
+    }
+  }
+}
+

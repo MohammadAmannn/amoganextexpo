@@ -1,0 +1,20 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export declare function handleChatPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleGeocodeRequest(request: NextRequest): Promise<NextResponse>;
+export declare function handleShortenPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleShortenOptions(): NextResponse;
+export declare function handleVouchersGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleVouchersPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleSearchPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleMessagesGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleMessagesPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleContactsGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleContactsPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleConversationsGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleGroupsGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleGroupsPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleProfilesGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleNotificationsGet(request: NextRequest): Promise<NextResponse>;
+export declare function handleNotificationsPost(request: NextRequest): Promise<NextResponse>;
+export declare function handleNotificationsPatch(request: NextRequest): Promise<NextResponse>;

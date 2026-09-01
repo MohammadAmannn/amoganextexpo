@@ -1,0 +1,19 @@
+{
+  "name": "@amoga/observability",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo observability:lint",
+    "test": "echo observability:test",
+    "build": "echo observability:source-package"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Lint, Typecheck & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript Check
+        run: npx tsc --noEmit
+
+      - name: Build @amogads/ui Package
+        run: npm run build:package
+
+      - name: Build Next.js Application
+        run: npm run build
+
+  visual-validation:
+    name: Visual & Token Regression Check
+    runs-on: ubuntu-latest
+    continue-on-error: true # Non-blocking until baseline catalog is locked
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Design Tokens Integrity
+        run: |
+          echo "Validating theme.css and token consistency..."
+          test -f src/design-system/tokens/theme.css
+          test -f src/design-system/tokens/index.ts

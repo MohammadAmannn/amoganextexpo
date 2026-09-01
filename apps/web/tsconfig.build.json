@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "strict": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/design-system/*": ["./src/design-system/*"]
+    }
+  },
+  "include": [
+    "src/design-system/**/*",
+    "src/standard-pages/**/*",
+    "src/stores/**/*",
+    "src/services/**/*",
+    "src/server/**/*",
+    "src/sdk/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
+}

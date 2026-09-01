@@ -1,0 +1,5 @@
+* @YOUR_GITHUB_TEAM
+/apps/web/ @YOUR_WEB_TEAM
+/apps/mobile/ @YOUR_MOBILE_TEAM
+/packages/theme/ @YOUR_DESIGN_SYSTEM_TEAM
+/supabase/ @YOUR_BACKEND_TEAM

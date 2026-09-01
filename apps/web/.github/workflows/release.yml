@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Release type (patch, minor, major)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  release:
+    name: Build & Publish @amoga/ui
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@amoga'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build Package
+        run: npm run build:package
+
+      - name: Bump Version
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          npm version ${{ inputs.version_type }} -m "chore(release): bump @amoga/ui to %s [skip ci]"
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=v$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Push Git Version Tag
+        run: |
+          git push origin main
+          git push origin --tags
+
+      - name: Publish to GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --access restricted
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_VERSION }}
+          release_name: Release ${{ env.NEW_VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            ## @amoga/ui Release ${{ env.NEW_VERSION }}
+
+            ### Package Information
+            - **Package**: `@amoga/ui`
+            - **Version**: `${{ env.NEW_VERSION }}`
+            - **Registry**: GitHub Packages (`npm.pkg.github.com`)
+
+            ### Highlights
+            - Clean Design System primitives, business components, tokens, and templates.
+            - Full TypeScript declaration maps (`dist/index.d.ts`).
+            - Modern OKLCH semantic token palette & theme styles (`dist/theme.css`).
+
+      - name: Trigger Downstream Consumer Upgrade PRs
+        uses: benc-uk/workflow-dispatch@v1
+        continue-on-error: true
+        with:
+          workflow: Cross-Repository Upgrade Automation
+          token: ${{ secrets.GITHUB_TOKEN }}
+          inputs: '{"target_version": "${{ env.NEW_VERSION }}", "release_notes": "Automated upgrade triggered following release ${{ env.NEW_VERSION }}"}'
+

@@ -1,0 +1,1 @@
+-- Add project-specific seed data here. Auth users are best created through Supabase Studio or test fixtures.

@@ -1,0 +1,26 @@
+{
+  "name": "@amoga/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "react-native": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo ui:lint",
+    "test": "echo ui:test",
+    "build": "echo ui:source-package"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-native": ">=0.86.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/react": "^19.2.0"
+  }
+}

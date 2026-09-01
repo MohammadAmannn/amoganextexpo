@@ -1,0 +1,19 @@
+{
+  "name": "@amoga/permissions",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo permissions:lint",
+    "test": "echo permissions:test",
+    "build": "echo permissions:source-package"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

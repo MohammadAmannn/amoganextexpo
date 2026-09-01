@@ -1,0 +1,2 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+export function createStorage(client: SupabaseClient, bucket = 'files') { return { upload: (path: string, body: any, options?: any) => client.storage.from(bucket).upload(path, body, options), remove: (paths: string[]) => client.storage.from(bucket).remove(paths), signedUrl: (path: string, expiresIn = 3600) => client.storage.from(bucket).createSignedUrl(path, expiresIn) } }

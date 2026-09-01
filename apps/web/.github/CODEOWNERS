@@ -1,0 +1,20 @@
+# Global repository fallback owners
+* @amoga-admin
+
+# Core Design System Tokens & Theme Governance
+/src/design-system/tokens/ @amoga-design-leads
+/ux/ @amoga-design-leads @amoga-ui-engineers
+
+# UI Primitives
+/src/design-system/components/ui/ @amoga-ui-engineers
+
+# Reusable Business Components
+/src/design-system/components/business/ @amoga-core-devs @amoga-ui-engineers
+
+# Reusable Page Templates
+/src/design-system/templates/ @amoga-core-devs @amoga-ui-engineers
+
+# Package Manifest & Tooling Governance
+/package.json @amoga-maintainers
+/tsup.config.ts @amoga-maintainers
+/.github/ @amoga-maintainers
