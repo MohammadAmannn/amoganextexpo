@@ -3,10 +3,11 @@ import {
   ActivityIndicator,
   BackHandler,
   Platform,
-  SafeAreaView,
   StyleSheet,
   View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar } from 'expo-status-bar'
 import { WebView } from 'react-native-webview'
 
 export default function App() {
@@ -30,8 +31,9 @@ export default function App() {
   }, [canGoBack])
 
   return (
-    <SafeAreaView style={styles.container}>
-      <WebView
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar style='dark' />
+      <WebView    
         ref={webViewRef}
         source={{ uri: 'https://amogads.vercel.app/' }}
         style={styles.webview}

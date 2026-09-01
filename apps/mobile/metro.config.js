@@ -3,23 +3,22 @@ const path = require('path')
 
 const projectRoot = __dirname
 const monorepoRoot = path.resolve(projectRoot, '../..')
+const packagesRoot = path.resolve(monorepoRoot, 'packages')
 
 const config = getDefaultConfig(projectRoot)
 
-// ─── Fix: "Failed to start watch mode" on Windows ─────────────────────────
-// Metro's default behavior on a pnpm monorepo is to watch the entire root
-// which causes Windows to hit the file-watcher limit and time out.
-// We explicitly restrict watchFolders to ONLY the mobile app itself.
-// Metro still resolves node_modules via nodeModulesPaths below.
-config.watchFolders = [projectRoot]
+// Watch mobile project AND shared packages.
+// Watching `packagesRoot` avoids Windows file-watcher timeouts caused by apps/web/.next
+config.watchFolders = [projectRoot, packagesRoot]
 
-// Tell Metro where to find node_modules so imports resolve correctly
+// Tell Metro where to find node_modules and enable package exports
 config.resolver = {
   ...config.resolver,
   nodeModulesPaths: [
     path.join(projectRoot, 'node_modules'),
     path.join(monorepoRoot, 'node_modules'),
   ],
+  unstable_enablePackageExports: true,
 }
 
 module.exports = config
