@@ -68,6 +68,10 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Configure EAS Project
+        working-directory: apps/mobile
+        run: eas init --account mohdaman --non-interactive || true
+
       - name: Build Android Preview APK on Runner
         working-directory: apps/mobile
         env:
@@ -117,6 +121,10 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Configure EAS Project
+        working-directory: apps/mobile
+        run: eas init --account mohdaman --non-interactive || true
 
       - name: Build iOS Preview on Runner
         working-directory: apps/mobile

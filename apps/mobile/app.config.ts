@@ -3,6 +3,7 @@ export default {
     name: process.env.EXPO_PUBLIC_APP_NAME ?? 'Amoga',
     slug: 'amoga',
     scheme: 'amoga',
+    owner: 'mohdaman',
     version: '1.0.0',
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
