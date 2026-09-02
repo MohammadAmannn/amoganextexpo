@@ -36,11 +36,44 @@ if (fs.existsSync(pnpmDir)) {
     patchFile(
       versionsJs,
       `async function getNativeModuleVersionsAsync(sdkVersion) {
-    const fetchAsync = (0, _client.createCachedFetch)({`,
+    const fetchAsync = (0, _client.createCachedFetch)({
+        cacheDirectory: 'native-modules-cache',
+        // 1 minute cache
+        ttl: 1000 * 60
+    });
+    const response = await fetchAsync(\`sdks/\${sdkVersion}/native-modules\`);
+    if (!response.ok) {
+        return {};
+    }
+    const json = await response.json();
+    const data = (0, _client.getResponseDataOrThrow)(json);
+    if (!data || !data.length) {
+        return {};
+    }
+    return fromBundledNativeModuleList(data);
+}`,
       `async function getNativeModuleVersionsAsync(sdkVersion) {
     try {
-        const fetchAsync = (0, _client.createCachedFetch)({`,
-      'try {',
+        const fetchAsync = (0, _client.createCachedFetch)({
+            cacheDirectory: 'native-modules-cache',
+            // 1 minute cache
+            ttl: 1000 * 60
+        });
+        const response = await fetchAsync(\`sdks/\${sdkVersion}/native-modules\`);
+        if (!response.ok) {
+            return {};
+        }
+        const json = await response.json();
+        const data = (0, _client.getResponseDataOrThrow)(json);
+        if (!data || !data.length) {
+            return {};
+        }
+        return fromBundledNativeModuleList(data);
+    } catch (e) {
+        return {};
+    }
+}`,
+      'catch (e)',
       'Node 24 fetch fix'
     )
 
