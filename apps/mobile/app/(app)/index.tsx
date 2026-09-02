@@ -1,31 +1,70 @@
-import { View } from 'react-native'
-import { Link } from 'expo-router'
+import { StyleSheet, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Button, Card, Text } from '@/components/ui'
 import { useAuth } from '@/providers/auth-provider'
-import { useAmogaTheme } from '@/providers/theme-provider'
 
-export default function Dashboard() {
-  const { user, signOut } = useAuth()
-  const theme = useAmogaTheme()
+export default function HomeScreen() {
+  const { signOut } = useAuth()
+
   return (
-    <View style={{ flex: 1 }} className='flex-1 gap-4 bg-background p-5'>
-      <Text className='text-3xl font-bold'>Amoga Starter</Text>
-      <Card>
-        <Text className='font-semibold'>Authenticated</Text>
-        <Text className='text-muted-foreground'>{user?.email}</Text>
-      </Card>
-      <Link href='/(app)/todos' asChild>
-        <Button>Open CRUD example</Button>
-      </Link>
-      <Link href='/(app)/themes' asChild>
-        <Button>Browse 50 themes</Button>
-      </Link>
-      <Button className='bg-secondary' onPress={theme.toggleMode}>
-        Toggle light / dark
-      </Button>
-      <Button className='bg-destructive' onPress={signOut}>
-        Sign out
-      </Button>
-    </View>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={styles.safeArea}
+    >
+      <View style={styles.container}>
+        <Card style={styles.card}>
+          <Text style={styles.welcomeText}>
+            Hello, Welcome to AmogaNextPods
+          </Text>
+          <Button
+            variant='outline'
+            onPress={signOut}
+            style={styles.signOutButton}
+          >
+            Sign Out
+          </Button>
+        </Card>
+      </View>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    padding: 32,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  welcomeText: {
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#0f172a',
+    letterSpacing: -0.4,
+    lineHeight: 30,
+  },
+  signOutButton: {
+    marginTop: 24,
+    width: '100%',
+  },
+})

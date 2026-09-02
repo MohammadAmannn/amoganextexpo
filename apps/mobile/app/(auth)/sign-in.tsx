@@ -5,10 +5,12 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   TextInput,
   View,
 } from 'react-native'
 import { Link, router } from 'expo-router'
+import * as Linking from 'expo-linking'
 import { Command, Eye, EyeOff, Smartphone, Mail } from 'lucide-react-native'
 import { signInSchema } from '@amoga/schemas'
 import { supabase } from '@/lib/supabase'
@@ -32,7 +34,7 @@ export default function SignInScreen() {
 
   // Countdown timer for OTP resend
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: ReturnType<typeof setTimeout>
     if (resendCooldown > 0) {
       timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000)
     }
@@ -41,51 +43,80 @@ export default function SignInScreen() {
 
   // Handle Email / Password Login
   async function handleEmailSignIn() {
-    const parsed = signInSchema.safeParse({ email, password })
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail) {
+      return Alert.alert('Email Required', 'Please enter your email address.')
+    }
+    if (!password) {
+      return Alert.alert('Password Required', 'Please enter your password.')
+    }
+
+    const parsed = signInSchema.safeParse({ email: trimmedEmail, password })
     if (!parsed.success) {
-      return Alert.alert('Check your details', parsed.error.issues[0]?.message)
+      const msg = parsed.error.issues[0]?.message || 'Please check your email and password.'
+      return Alert.alert('Check your details', msg)
     }
 
     setBusy(true)
-    const { error } = await supabase.auth.signInWithPassword({
-      email: parsed.data.email,
-      password: parsed.data.password,
-    })
-    setBusy(false)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      })
 
-    if (error) {
-      return Alert.alert('Sign in failed', error.message)
+      if (error) {
+        if (error.message.toLowerCase().includes('invalid login credentials')) {
+          Alert.alert(
+            'Sign In Failed',
+            'Invalid email or password. If you do not have an account yet, please click "Sign Up" below.'
+          )
+        } else {
+          Alert.alert('Sign In Failed', error.message)
+        }
+        return
+      }
+
+      if (data?.session) {
+        router.replace('/(app)')
+      }
+    } catch (e: any) {
+      Alert.alert('Sign In Error', e?.message || 'An unexpected error occurred.')
+    } finally {
+      setBusy(false)
     }
-
-    router.replace('/(app)')
   }
 
   // Handle Send Mobile OTP
   async function handleSendOtp() {
     const cleanPhone = phoneNumber.replace(/\D/g, '')
     if (!cleanPhone || cleanPhone.length < 7) {
-      return Alert.alert('Invalid phone number', 'Please enter a valid phone number.')
+      return Alert.alert('Invalid phone number', 'Please enter a valid phone number (7 to 15 digits).')
     }
 
     const fullNumber = `${countryCode}${cleanPhone}`
     setBusy(true)
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: fullNumber,
-    })
-    setBusy(false)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: fullNumber,
+      })
 
-    if (error) {
-      return Alert.alert('OTP Failed', error.message)
+      if (error) {
+        return Alert.alert('OTP Failed', error.message)
+      }
+
+      setOtpSent(true)
+      setResendCooldown(30)
+      Alert.alert('OTP Sent', `Verification code sent to ${fullNumber}`)
+    } catch (e: any) {
+      Alert.alert('OTP Error', e?.message || 'Unable to send OTP.')
+    } finally {
+      setBusy(false)
     }
-
-    setOtpSent(true)
-    setResendCooldown(30)
-    Alert.alert('OTP Sent', `Verification code sent to ${fullNumber}`)
   }
 
   // Handle Verify Mobile OTP
   async function handleVerifyOtp() {
-    if (!otpCode || otpCode.length < 6) {
+    if (!otpCode || otpCode.trim().length < 6) {
       return Alert.alert('Invalid OTP', 'Please enter the 6-digit code sent to your phone.')
     }
 
@@ -93,30 +124,55 @@ export default function SignInScreen() {
     const fullNumber = `${countryCode}${cleanPhone}`
 
     setBusy(true)
-    const { error } = await supabase.auth.verifyOtp({
-      phone: fullNumber,
-      token: otpCode,
-      type: 'sms',
-    })
-    setBusy(false)
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: fullNumber,
+        token: otpCode.trim(),
+        type: 'sms',
+      })
 
-    if (error) {
-      return Alert.alert('Verification failed', error.message)
+      if (error) {
+        return Alert.alert('Verification failed', error.message)
+      }
+
+      if (data?.session) {
+        router.replace('/(app)')
+      }
+    } catch (e: any) {
+      Alert.alert('Verification Error', e?.message || 'Unable to verify code.')
+    } finally {
+      setBusy(false)
     }
-
-    router.replace('/(app)')
   }
 
-  // Handle Google Sign-in placeholder
+  // Handle Google Sign-in
   async function handleGoogleSignIn() {
     setBusy(true)
     try {
+      const redirectUrl = Linking.createURL('/')
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
       })
-      if (error) Alert.alert('Google Sign-in', error.message)
+
+      if (error) {
+        Alert.alert('Google Sign-in Error', error.message)
+        return
+      }
+
+      if (data?.url) {
+        await Linking.openURL(data.url)
+      } else {
+        Alert.alert(
+          'Google Sign-in',
+          'Could not start Google Sign-In. Ensure Google provider is enabled in your Supabase dashboard.'
+        )
+      }
     } catch (e: any) {
-      Alert.alert('Google Sign-in', e.message || 'Unable to connect to Google')
+      Alert.alert('Google Sign-in Error', e?.message || 'Unable to connect to Google.')
     } finally {
       setBusy(false)
     }
@@ -124,89 +180,54 @@ export default function SignInScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
-      className='flex-1 bg-background'
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.keyboardContainer}
     >
       {/* Decorative ambient background accents */}
-      <View
-        pointerEvents='none'
-        style={{
-          position: 'absolute',
-          top: -80,
-          right: -80,
-          width: 260,
-          height: 260,
-          borderRadius: 130,
-          backgroundColor: '#8b5cf6',
-          opacity: 0.08,
-        }}
-      />
-      <View
-        pointerEvents='none'
-        style={{
-          position: 'absolute',
-          bottom: -80,
-          left: -80,
-          width: 260,
-          height: 260,
-          borderRadius: 130,
-          backgroundColor: '#8b5cf6',
-          opacity: 0.08,
-        }}
-      />
+      <View pointerEvents='none' style={styles.topGlow} />
+      <View pointerEvents='none' style={styles.bottomGlow} />
 
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-        style={{ flex: 1 }}
-        className='px-5 py-10'
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
         keyboardShouldPersistTaps='handled'
       >
-        <View className='mx-auto w-full max-w-md'>
+        <View style={styles.contentWrapper}>
           {/* Web Logo & Brand Header */}
-          <View className='mb-6 flex-row items-center justify-center gap-2.5'>
-            <View className='h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20'>
-              <Command size={20} color='#8b5cf6' />
+          <View style={styles.brandHeader}>
+            <View style={styles.brandIconBox}>
+              <Command size={22} color='#7c3aed' />
             </View>
-            <Text className='text-2xl font-bold tracking-tight text-foreground'>
-              AmogaApp
-            </Text>
+            <Text style={styles.brandTitle}>AmogaApp</Text>
           </View>
 
           {/* Main Card Container */}
-          <Card className='rounded-2xl border border-border/80 bg-card/95 p-6 shadow-lg'>
+          <Card style={styles.card}>
             {/* Card Header */}
-            <View className='mb-5'>
-              <Text className='text-xl font-bold tracking-tight text-foreground'>
-                Sign in
-              </Text>
-              <Text className='mt-1 text-xs text-muted-foreground leading-relaxed'>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Sign in</Text>
+              <Text style={styles.cardDescription}>
                 Enter your credentials below to log into your account. Don't have an account?{' '}
-                <Link
-                  href='/(auth)/sign-up'
-                  className='font-semibold text-primary underline'
-                >
+                <Link href='/(auth)/sign-up' style={styles.linkText}>
                   Sign Up
                 </Link>
               </Text>
             </View>
 
             {/* Tabs List matching Web (Mobile vs Login) */}
-            <View className='mb-5 flex-row border-b border-border'>
+            <View style={styles.tabsList}>
               <Pressable
                 onPress={() => setActiveTab('mobile')}
-                className={`flex-1 items-center pb-2.5 ${
-                  activeTab === 'mobile'
-                    ? 'border-b-2 border-primary'
-                    : 'border-transparent'
-                }`}
+                style={[
+                  styles.tabTrigger,
+                  activeTab === 'mobile' && styles.tabTriggerActive,
+                ]}
               >
                 <Text
-                  className={`text-sm ${
-                    activeTab === 'mobile'
-                      ? 'font-bold text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
+                  style={[
+                    styles.tabText,
+                    activeTab === 'mobile' && styles.tabTextActive,
+                  ]}
                 >
                   Mobile
                 </Text>
@@ -214,18 +235,16 @@ export default function SignInScreen() {
 
               <Pressable
                 onPress={() => setActiveTab('login')}
-                className={`flex-1 items-center pb-2.5 ${
-                  activeTab === 'login'
-                    ? 'border-b-2 border-primary'
-                    : 'border-transparent'
-                }`}
+                style={[
+                  styles.tabTrigger,
+                  activeTab === 'login' && styles.tabTriggerActive,
+                ]}
               >
                 <Text
-                  className={`text-sm ${
-                    activeTab === 'login'
-                      ? 'font-bold text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
+                  style={[
+                    styles.tabText,
+                    activeTab === 'login' && styles.tabTextActive,
+                  ]}
                 >
                   Login
                 </Text>
@@ -234,58 +253,55 @@ export default function SignInScreen() {
 
             {/* TAB CONTENT: LOGIN (Email / Password) */}
             {activeTab === 'login' && (
-              <View className='space-y-4'>
-                <View>
-                  <Text className='mb-1.5 text-xs font-semibold text-foreground'>
-                    Email
-                  </Text>
-                  <View className='min-h-11 flex-row items-center rounded-lg border border-border bg-background px-3'>
-                    <Mail size={16} color='#64748b' className='mr-2.5' />
+              <View style={styles.formContainer}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Email</Text>
+                  <View style={styles.inputWrapper}>
+                    <Mail size={18} color='#94a3b8' style={styles.inputIcon} />
                     <TextInput
                       autoCapitalize='none'
                       keyboardType='email-address'
                       placeholder='name@example.com'
-                      placeholderTextColor='#64748b'
+                      placeholderTextColor='#94a3b8'
                       value={email}
                       onChangeText={setEmail}
-                      className='flex-1 py-2.5 text-sm text-foreground'
+                      style={styles.textInput}
                     />
                   </View>
                 </View>
 
-                <View className='mt-3'>
-                  <View className='flex-row items-center justify-between mb-1.5'>
-                    <Text className='text-xs font-semibold text-foreground'>
-                      Password
-                    </Text>
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.label}>Password</Text>
                     <Pressable
                       onPress={() =>
-                        Alert.alert('Reset Password', 'Check your Supabase project email reset flow.')
+                        Alert.alert(
+                          'Reset Password',
+                          'To reset your password, please check your Supabase authentication configuration.'
+                        )
                       }
                     >
-                      <Text className='text-xs text-primary underline'>
-                        Forgot password?
-                      </Text>
+                      <Text style={styles.forgotPasswordText}>Forgot password?</Text>
                     </Pressable>
                   </View>
 
-                  <View className='min-h-11 flex-row items-center rounded-lg border border-border bg-background px-3'>
+                  <View style={styles.inputWrapper}>
                     <TextInput
                       placeholder='Password'
-                      placeholderTextColor='#64748b'
+                      placeholderTextColor='#94a3b8'
                       secureTextEntry={!showPassword}
                       value={password}
                       onChangeText={setPassword}
-                      className='flex-1 py-2.5 text-sm text-foreground'
+                      style={styles.textInput}
                     />
                     <Pressable
                       onPress={() => setShowPassword((prev) => !prev)}
-                      className='p-1'
+                      style={styles.eyeIconPressable}
                     >
                       {showPassword ? (
-                        <EyeOff size={18} color='#64748b' />
+                        <EyeOff size={18} color='#94a3b8' />
                       ) : (
-                        <Eye size={18} color='#64748b' />
+                        <Eye size={18} color='#94a3b8' />
                       )}
                     </Pressable>
                   </View>
@@ -294,18 +310,16 @@ export default function SignInScreen() {
                 <Button
                   loading={busy}
                   onPress={handleEmailSignIn}
-                  className='mt-4'
+                  style={styles.primaryButton}
                 >
                   Sign In
                 </Button>
 
                 {/* Social Login Divider */}
-                <View className='my-3 flex-row items-center justify-center gap-3'>
-                  <View className='h-px flex-1 bg-border/60' />
-                  <Text className='text-[11px] uppercase tracking-wider text-muted-foreground'>
-                    Or continue with
-                  </Text>
-                  <View className='h-px flex-1 bg-border/60' />
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>OR CONTINUE WITH</Text>
+                  <View style={styles.dividerLine} />
                 </View>
 
                 {/* Google Sign-in Button */}
@@ -313,77 +327,71 @@ export default function SignInScreen() {
                   variant='outline'
                   loading={busy}
                   onPress={handleGoogleSignIn}
-                  className='flex-row items-center justify-center gap-2'
+                  style={styles.socialButton}
                 >
-                  <Text className='text-sm font-medium text-foreground'>
-                    Continue with Google
-                  </Text>
+                  <View style={styles.googleIconBadge}>
+                    <Text style={styles.googleIconText}>G</Text>
+                  </View>
+                  <Text style={styles.socialButtonText}>Continue with Google</Text>
                 </Button>
               </View>
             )}
 
             {/* TAB CONTENT: MOBILE (OTP Authentication) */}
             {activeTab === 'mobile' && (
-              <View className='space-y-4'>
-                <View>
-                  <Text className='mb-1.5 text-xs font-semibold text-foreground'>
-                    Mobile Number
-                  </Text>
-                  <View className='flex-row gap-2'>
-                    <View className='w-20 items-center justify-center rounded-lg border border-border bg-muted/40 px-2'>
+              <View style={styles.formContainer}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Mobile Number</Text>
+                  <View style={styles.phoneInputRow}>
+                    <View style={styles.countryCodeBox}>
                       <TextInput
                         value={countryCode}
                         onChangeText={setCountryCode}
                         keyboardType='phone-pad'
-                        className='text-center text-sm font-medium text-foreground'
+                        style={styles.countryCodeInput}
                       />
                     </View>
 
-                    <View className='min-h-11 flex-1 flex-row items-center rounded-lg border border-border bg-background px-3'>
-                      <Smartphone size={16} color='#64748b' className='mr-2' />
+                    <View style={[styles.inputWrapper, { flex: 1 }]}>
+                      <Smartphone size={18} color='#94a3b8' style={styles.inputIcon} />
                       <TextInput
                         keyboardType='phone-pad'
                         placeholder='Mobile number'
-                        placeholderTextColor='#64748b'
+                        placeholderTextColor='#94a3b8'
                         value={phoneNumber}
                         onChangeText={setPhoneNumber}
-                        className='flex-1 py-2.5 text-sm text-foreground'
+                        style={styles.textInput}
                       />
                     </View>
                   </View>
                 </View>
 
                 {otpSent && (
-                  <View className='mt-3'>
-                    <Text className='mb-1.5 text-xs font-semibold text-foreground'>
-                      Enter 6-Digit OTP
-                    </Text>
-                    <View className='min-h-11 flex-row items-center rounded-lg border border-border bg-background px-3'>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Enter 6-Digit OTP</Text>
+                    <View style={styles.inputWrapper}>
                       <TextInput
                         keyboardType='number-pad'
                         maxLength={6}
                         placeholder='123456'
-                        placeholderTextColor='#64748b'
+                        placeholderTextColor='#94a3b8'
                         value={otpCode}
                         onChangeText={setOtpCode}
-                        className='flex-1 py-2.5 text-center text-lg font-bold tracking-widest text-foreground'
+                        style={styles.otpInput}
                       />
                     </View>
 
-                    <View className='mt-2 flex-row justify-between items-center'>
-                      <Text className='text-xs text-muted-foreground'>
-                        Didn't receive code?
-                      </Text>
+                    <View style={styles.otpResendRow}>
+                      <Text style={styles.resendPrompt}>Didn't receive code?</Text>
                       <Pressable
                         disabled={resendCooldown > 0 || busy}
                         onPress={handleSendOtp}
                       >
                         <Text
-                          className={`text-xs font-semibold ${
-                            resendCooldown > 0
-                              ? 'text-muted-foreground'
-                              : 'text-primary underline'
-                          }`}
+                          style={[
+                            styles.resendLink,
+                            resendCooldown > 0 && styles.resendDisabled,
+                          ]}
                         >
                           {resendCooldown > 0
                             ? `Resend in ${resendCooldown}s`
@@ -397,7 +405,7 @@ export default function SignInScreen() {
                 <Button
                   loading={busy}
                   onPress={otpSent ? handleVerifyOtp : handleSendOtp}
-                  className='mt-4'
+                  style={styles.primaryButton}
                 >
                   {otpSent ? 'Verify & Sign In' : 'Send OTP'}
                 </Button>
@@ -405,17 +413,11 @@ export default function SignInScreen() {
             )}
 
             {/* Card Footer matching Web */}
-            <View className='mt-6 border-t border-border/40 pt-4'>
-              <Text className='text-center text-[11px] text-muted-foreground leading-relaxed'>
+            <View style={styles.cardFooter}>
+              <Text style={styles.footerText}>
                 By clicking sign in, you agree to our{' '}
-                <Text className='underline text-foreground'>
-                  Terms of Service
-                </Text>{' '}
-                and{' '}
-                <Text className='underline text-foreground'>
-                  Privacy Policy
-                </Text>
-                .
+                <Text style={styles.footerLink}>Terms of Service</Text> and{' '}
+                <Text style={styles.footerLink}>Privacy Policy</Text>.
               </Text>
             </View>
           </Card>
@@ -424,3 +426,289 @@ export default function SignInScreen() {
     </KeyboardAvoidingView>
   )
 }
+
+const styles = StyleSheet.create({
+  keyboardContainer: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 36,
+  },
+  contentWrapper: {
+    width: '100%',
+    maxWidth: 420,
+    alignItems: 'center',
+  },
+  topGlow: {
+    position: 'absolute',
+    top: -60,
+    right: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#7c3aed',
+    opacity: 0.08,
+  },
+  bottomGlow: {
+    position: 'absolute',
+    bottom: -60,
+    left: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#7c3aed',
+    opacity: 0.08,
+  },
+  brandHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 20,
+  },
+  brandIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#ede9fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+  },
+  brandTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0f172a',
+    letterSpacing: -0.5,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 24,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  cardHeader: {
+    marginBottom: 20,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    letterSpacing: -0.4,
+  },
+  cardDescription: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 6,
+    lineHeight: 19,
+  },
+  linkText: {
+    color: '#7c3aed',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  tabsList: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    marginBottom: 20,
+  },
+  tabTrigger: {
+    flex: 1,
+    alignItems: 'center',
+    paddingBottom: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabTriggerActive: {
+    borderBottomColor: '#7c3aed',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: '#0f172a',
+    fontWeight: '700',
+  },
+  formContainer: {
+    width: '100%',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 6,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  forgotPasswordText: {
+    fontSize: 12,
+    color: '#7c3aed',
+    textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    minHeight: 46,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#0f172a',
+    paddingVertical: 10,
+  },
+  eyeIconPressable: {
+    padding: 6,
+  },
+  phoneInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  countryCodeBox: {
+    width: 76,
+    minHeight: 46,
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countryCodeInput: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+    textAlign: 'center',
+  },
+  otpInput: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: 6,
+    textAlign: 'center',
+    color: '#0f172a',
+    paddingVertical: 8,
+  },
+  otpResendRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  resendPrompt: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  resendLink: {
+    fontSize: 12,
+    color: '#7c3aed',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  resendDisabled: {
+    color: '#94a3b8',
+    textDecorationLine: 'none',
+  },
+  primaryButton: {
+    backgroundColor: '#7c3aed',
+    minHeight: 46,
+    borderRadius: 10,
+    marginTop: 6,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 18,
+    gap: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e2e8f0',
+  },
+  dividerText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '600',
+    letterSpacing: 0.8,
+  },
+  socialButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    minHeight: 46,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleIconBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#4285F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  googleIconText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  socialButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  cardFooter: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  footerText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  footerLink: {
+    color: '#64748b',
+    textDecorationLine: 'underline',
+  },
+})
