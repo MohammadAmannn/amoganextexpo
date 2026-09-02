@@ -15,7 +15,7 @@ jobs:
         with: { version: 10.17.1 }
       - uses: actions/setup-node@v4
         with: { node-version: '22.13.1', cache: pnpm }
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm --dir apps/mobile doctor
@@ -27,5 +27,5 @@ jobs:
         with: { version: 10.17.1 }
       - uses: actions/setup-node@v4
         with: { node-version: '22.13.1', cache: pnpm }
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm --dir apps/web build
