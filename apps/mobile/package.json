@@ -4,6 +4,7 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
+    "expo": "expo",
     "start": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 EXPO_OFFLINE=true expo start --host lan",
     "android": "expo run:android",
     "ios": "expo run:ios",
