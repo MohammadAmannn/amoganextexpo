@@ -12,6 +12,10 @@ export default {
     plugins: ['expo-router'],
     ios: { supportsTablet: true, bundleIdentifier: 'com.amoga.app' },
     android: { package: 'com.amoga.app', adaptiveIcon: { backgroundColor: '#ffffff' } },
-    extra: { eas: { projectId: process.env.EAS_PROJECT_ID } },
+    extra: {
+      eas: {
+        projectId: process.env.EAS_PROJECT_ID ?? 'cf8a18cd-d1e9-41f3-9f42-9c3967557724',
+      },
+    },
   },
 }

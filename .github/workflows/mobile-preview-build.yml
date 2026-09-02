@@ -68,13 +68,10 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Configure EAS Project
-        working-directory: apps/mobile
-        run: eas init --account mohdaman --non-interactive || true
-
       - name: Build Android Preview APK on Runner
         working-directory: apps/mobile
         env:
+          EAS_PROJECT_ID: 'cf8a18cd-d1e9-41f3-9f42-9c3967557724'
           EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
         run: |
@@ -122,13 +119,10 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Configure EAS Project
-        working-directory: apps/mobile
-        run: eas init --account mohdaman --non-interactive || true
-
       - name: Build iOS Preview on Runner
         working-directory: apps/mobile
         env:
+          EAS_PROJECT_ID: 'cf8a18cd-d1e9-41f3-9f42-9c3967557724'
           EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
         run: |
