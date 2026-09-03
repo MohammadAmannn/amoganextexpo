@@ -1,0 +1,11 @@
+export { ComponentBadge } from './components/ComponentBadge'
+export { DesignSystemHeader } from './components/DesignSystemHeader'
+export { DesignSystemSearch } from './components/DesignSystemSearch'
+export { CategoryFilter } from './components/CategoryFilter'
+export { DesignSystemCard } from './components/DesignSystemCard'
+export { DesignSystemList } from './components/DesignSystemList'
+export { DesignSystemScreen } from './components/DesignSystemScreen'
+
+export { GALLERY_CATEGORIES, CATEGORY_CONFIG, CATEGORY_COLORS } from './data/categories'
+export { galleryRegistry } from './data/registry'
+export type { GalleryCategory, GalleryEntry, CategoryConfigItem, CategoryColorStyle } from './types'

@@ -1,122 +1,120 @@
-import { ActivityIndicator, Pressable, type PressableProps, StyleSheet } from 'react-native'
-import { Text } from './text'
+import { TextClassContext } from '@/components/ui/text';
+import { cn } from '@/lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { ActivityIndicator, Platform, Pressable } from 'react-native';
 
-export interface ButtonProps extends PressableProps {
-  className?: string
-  variant?: 'default' | 'outline' | 'secondary' | 'ghost'
-  loading?: boolean
-}
-
-export function Button({
-  children,
-  className = '',
-  variant = 'default',
-  loading = false,
-  disabled,
-  style,
-  ...props
-}: ButtonProps) {
-  const baseClasses = 'min-h-11 flex-row items-center justify-center rounded-xl px-4 py-3 active:opacity-80'
-
-  const variantStyles = {
-    default: 'bg-primary',
-    outline: 'border border-border bg-transparent',
-    secondary: 'bg-secondary',
-    ghost: 'bg-transparent',
+const buttonVariants = cva(
+  cn(
+    'group shrink-0 flex-row items-center justify-center gap-2 rounded-md shadow-none',
+    Platform.select({
+      web: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive whitespace-nowrap outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+    })
+  ),
+  {
+    variants: {
+      variant: {
+        default: cn(
+          'bg-primary active:bg-primary/90 shadow-sm shadow-black/5',
+          Platform.select({ web: 'hover:bg-primary/90' })
+        ),
+        destructive: cn(
+          'bg-destructive active:bg-destructive/90 dark:bg-destructive/60 shadow-sm shadow-black/5',
+          Platform.select({
+            web: 'hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
+          })
+        ),
+        outline: cn(
+          'border-border bg-background active:bg-accent dark:bg-input/30 dark:border-input dark:active:bg-input/50 border shadow-sm shadow-black/5',
+          Platform.select({
+            web: 'hover:bg-accent dark:hover:bg-input/50',
+          })
+        ),
+        secondary: cn(
+          'bg-secondary active:bg-secondary/80 shadow-sm shadow-black/5',
+          Platform.select({ web: 'hover:bg-secondary/80' })
+        ),
+        ghost: cn(
+          'active:bg-accent dark:active:bg-accent/50',
+          Platform.select({ web: 'hover:bg-accent dark:hover:bg-accent/50' })
+        ),
+        link: '',
+      },
+      size: {
+        default: cn('h-10 px-4 py-2 sm:h-9', Platform.select({ web: 'has-[>svg]:px-3' })),
+        sm: cn('h-9 gap-1.5 rounded-md px-3 sm:h-8', Platform.select({ web: 'has-[>svg]:px-2.5' })),
+        lg: cn('h-11 rounded-md px-6 sm:h-10', Platform.select({ web: 'has-[>svg]:px-4' })),
+        icon: 'h-10 w-10 sm:h-9 sm:w-9',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
   }
+);
 
-  const textStyles = {
-    default: 'text-primary-foreground font-semibold',
-    outline: 'text-foreground font-semibold',
-    secondary: 'text-secondary-foreground font-semibold',
-    ghost: 'text-foreground font-medium',
+const buttonTextVariants = cva(
+  cn(
+    'text-foreground text-sm font-medium',
+    Platform.select({ web: 'pointer-events-none transition-colors' })
+  ),
+  {
+    variants: {
+      variant: {
+        default: 'text-primary-foreground',
+        destructive: 'text-white',
+        outline: cn(
+          'group-active:text-accent-foreground',
+          Platform.select({ web: 'group-hover:text-accent-foreground' })
+        ),
+        secondary: 'text-secondary-foreground',
+        ghost: 'group-active:text-accent-foreground',
+        link: cn(
+          'text-primary group-active:underline',
+          Platform.select({ web: 'underline-offset-4 hover:underline group-hover:underline' })
+        ),
+      },
+      size: {
+        default: '',
+        sm: '',
+        lg: '',
+        icon: '',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
   }
+);
 
-  const isDisabled = disabled || loading
+type ButtonProps = React.ComponentProps<typeof Pressable> &
+  React.RefAttributes<typeof Pressable> &
+  VariantProps<typeof buttonVariants> & {
+    loading?: boolean;
+  };
 
+function Button({ className, variant, size, loading, disabled, children, ...props }: ButtonProps) {
   return (
-    <Pressable
-      style={(state) => [
-        defaultButtonStyles.base,
-        defaultButtonStyles[variant],
-        isDisabled && defaultButtonStyles.disabled,
-        state.pressed && !isDisabled && defaultButtonStyles.pressed,
-        typeof style === 'function' ? style(state) : style,
-      ]}
-      className={`${baseClasses} ${variantStyles[variant]} ${isDisabled ? 'opacity-50' : ''} ${className}`}
-      disabled={isDisabled}
-      {...props}
-    >
-      {loading ? (
-        <ActivityIndicator
-          size='small'
-          color={variant === 'default' ? '#ffffff' : '#7c3aed'}
-        />
-      ) : typeof children === 'string' ? (
-        <Text
-          style={[defaultTextStyles.base, defaultTextStyles[variant]]}
-          className={`text-sm ${textStyles[variant]}`}
-        >
-          {children}
-        </Text>
-      ) : (
-        children
-      )}
-    </Pressable>
-  )
+    <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
+      <Pressable
+        className={cn((disabled || loading) && 'opacity-50', buttonVariants({ variant, size }), className)}
+        role="button"
+        disabled={disabled || loading}
+        {...props}
+      >
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={variant === 'outline' || variant === 'ghost' ? '#111827' : '#FFFFFF'}
+          />
+        ) : (
+          children
+        )}
+      </Pressable>
+    </TextClassContext.Provider>
+  );
 }
 
-const defaultButtonStyles = StyleSheet.create({
-  base: {
-    minHeight: 46,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  default: {
-    backgroundColor: '#7c3aed',
-  },
-  outline: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  secondary: {
-    backgroundColor: '#f1f5f9',
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-})
-
-const defaultTextStyles = StyleSheet.create({
-  base: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  default: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  outline: {
-    color: '#0f172a',
-    fontWeight: '600',
-  },
-  secondary: {
-    color: '#0f172a',
-    fontWeight: '600',
-  },
-  ghost: {
-    color: '#0f172a',
-    fontWeight: '500',
-  },
-})
+export { Button, buttonTextVariants, buttonVariants };
+export type { ButtonProps };

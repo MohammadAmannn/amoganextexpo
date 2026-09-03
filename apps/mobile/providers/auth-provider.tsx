@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import * as Linking from 'expo-linking'
+import { Platform } from 'react-native'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/stores/auth-store'
 
 const AuthContext = createContext<{
   session: Session | null
@@ -13,6 +15,25 @@ const AuthContext = createContext<{
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const syncUserToStore = (u: User | null) => {
+    if (u) {
+      const authUser = {
+        id: u.id,
+        accountNo: u.id.slice(0, 8),
+        email: u.email || '',
+        name:
+          u.user_metadata?.full_name ||
+          u.user_metadata?.name ||
+          u.user_metadata?.user_name ||
+          u.email?.split('@')[0] ||
+          'User',
+        picture: u.user_metadata?.avatar_url || u.user_metadata?.picture || '',
+        role: ['user'],
+      }
+      useAuthStore.getState().auth.setUser(authUser)
+    }
+  }
 
   useEffect(() => {
     let active = true
@@ -27,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(({ data }) => {
         if (active) {
           setSession(data?.session ?? null)
+          syncUserToStore(data?.session?.user ?? null)
           setLoading(false)
         }
       })
@@ -36,7 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
-      if (active) setSession(next)
+      if (active) {
+        setSession(next)
+        syncUserToStore(next?.user ?? null)
+      }
     })
 
     // Listen for incoming deep links from OAuth
@@ -54,9 +79,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const code = searchParams.get('code')
 
         if (code) {
-          const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+          const { data: sessionData, error } =
+            await supabase.auth.exchangeCodeForSession(code)
           if (!error && sessionData.session && active) {
             setSession(sessionData.session)
+            syncUserToStore(sessionData.session.user)
           }
         } else if (accessToken && refreshToken) {
           const { data: sessionData, error } = await supabase.auth.setSession({
@@ -65,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
           if (!error && sessionData.session && active) {
             setSession(sessionData.session)
+            syncUserToStore(sessionData.session.user)
           }
         }
       } catch (err) {
@@ -72,7 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    Linking.getInitialURL().then(handleUrl)
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      handleUrl(window.location.href)
+    } else {
+      Linking.getInitialURL().then(handleUrl)
+    }
+
     const linkSub = Linking.addEventListener('url', (event) => handleUrl(event.url))
 
     return () => {
@@ -89,7 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user: session?.user ?? null,
       loading,
       signOut: async () => {
-        await supabase.auth.signOut()
+        await supabase.auth.signOut().catch(() => {})
+        useAuthStore.getState().auth.reset()
+        setSession(null)
       },
     }),
     [session, loading]

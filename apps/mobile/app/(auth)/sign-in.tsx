@@ -15,9 +15,18 @@ import { Command, Eye, EyeOff, Smartphone, Mail } from 'lucide-react-native'
 import { signInSchema } from '@amoga/schemas'
 import { supabase } from '@/lib/supabase'
 import { Button, Card, Text } from '@/components/ui'
+import { useAuth } from '@/providers/auth-provider'
 
 export default function SignInScreen() {
+  const { session, loading: authLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<'mobile' | 'login'>('login')
+
+  // Auto redirect as soon as session is active (e.g. from Google OAuth callback)
+  useEffect(() => {
+    if (session && !authLoading) {
+      router.replace('/(app)')
+    }
+  }, [session, authLoading])
 
   // Email & Password state
   const [email, setEmail] = useState('')
@@ -149,12 +158,16 @@ export default function SignInScreen() {
   async function handleGoogleSignIn() {
     setBusy(true)
     try {
-      const redirectUrl = Linking.createURL('/')
+      const redirectUrl =
+        Platform.OS === 'web' && typeof window !== 'undefined'
+          ? window.location.origin
+          : Linking.createURL('/')
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
-          skipBrowserRedirect: true,
+          skipBrowserRedirect: Platform.OS === 'web' ? false : true,
         },
       })
 
@@ -163,13 +176,8 @@ export default function SignInScreen() {
         return
       }
 
-      if (data?.url) {
+      if (Platform.OS !== 'web' && data?.url) {
         await Linking.openURL(data.url)
-      } else {
-        Alert.alert(
-          'Google Sign-in',
-          'Could not start Google Sign-In. Ensure Google provider is enabled in your Supabase dashboard.'
-        )
       }
     } catch (e: any) {
       Alert.alert('Google Sign-in Error', e?.message || 'Unable to connect to Google.')
