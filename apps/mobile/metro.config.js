@@ -1,23 +1,46 @@
 const { getDefaultConfig } = require('expo/metro-config')
 const { withNativeWind } = require('nativewind/metro')
 const path = require('path')
+const fs = require('fs')
 
 const projectRoot = __dirname
-const monorepoRoot = path.resolve(projectRoot, '../..')
-const packagesRoot = path.resolve(monorepoRoot, 'packages')
+
+// Find monorepo root dynamically (where pnpm-workspace.yaml or pnpm-lock.yaml lives)
+let monorepoRoot = projectRoot
+let current = projectRoot
+for (let i = 0; i < 4; i++) {
+  const parent = path.resolve(current, '..')
+  if (
+    fs.existsSync(path.join(parent, 'pnpm-workspace.yaml')) ||
+    fs.existsSync(path.join(parent, 'pnpm-lock.yaml'))
+  ) {
+    monorepoRoot = parent
+    break
+  }
+  current = parent
+}
 
 const config = getDefaultConfig(projectRoot)
 
-// 1. Watch mobile project AND shared monorepo packages
-config.watchFolders = [projectRoot, packagesRoot]
+// 1. Watch all relevant workspace directories
+const watchFolders = [projectRoot]
+if (monorepoRoot !== projectRoot) {
+  watchFolders.push(monorepoRoot)
+  const packagesRoot = path.resolve(monorepoRoot, 'packages')
+  if (fs.existsSync(packagesRoot)) {
+    watchFolders.push(packagesRoot)
+  }
+}
+config.watchFolders = watchFolders
 
-// 2. Configure node_modules resolution paths (mobile first, monorepo root second)
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, 'node_modules'),
-  path.resolve(monorepoRoot, 'node_modules'),
-]
+// 2. Node modules search paths (local project first, then monorepo root)
+const nodeModulesPaths = [path.resolve(projectRoot, 'node_modules')]
+if (monorepoRoot !== projectRoot) {
+  nodeModulesPaths.push(path.resolve(monorepoRoot, 'node_modules'))
+}
+config.resolver.nodeModulesPaths = nodeModulesPaths
 
-// 3. Pin critical packages as singletons to guarantee only ONE copy is ever loaded
+// 3. Resolve singletons cleanly
 const singletons = [
   'react',
   'react-dom',
@@ -36,52 +59,34 @@ const singletons = [
 ]
 
 config.resolver.extraNodeModules = singletons.reduce((acc, name) => {
-  acc[name] = path.resolve(projectRoot, 'node_modules', name)
+  try {
+    const resolvedPath = path.dirname(
+      require.resolve(`${name}/package.json`, { paths: [projectRoot, monorepoRoot] })
+    )
+    acc[name] = resolvedPath
+  } catch {
+    acc[name] = path.resolve(projectRoot, 'node_modules', name)
+  }
   return acc
 }, {})
 
-// 4. Custom resolveRequest to guarantee single-instance resolution for React & React Native
+// 4. Custom resolveRequest with fallback
 const defaultResolveRequest = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Guarantee react and its submodules (e.g. react/jsx-runtime, react/jsx-dev-runtime)
-  if (moduleName === 'react' || moduleName.startsWith('react/')) {
-    const resolved = require.resolve(moduleName, { paths: [projectRoot] })
-    return {
-      filePath: resolved,
-      type: 'sourceFile',
+  try {
+    if (moduleName === 'react' || moduleName.startsWith('react/')) {
+      const resolved = require.resolve(moduleName, { paths: [projectRoot, monorepoRoot] })
+      return { filePath: resolved, type: 'sourceFile' }
     }
-  }
-
-  // Guarantee react-dom and its submodules (e.g. react-dom/client)
-  if (moduleName === 'react-dom' || moduleName.startsWith('react-dom/')) {
-    const resolved = require.resolve(moduleName, { paths: [projectRoot] })
-    return {
-      filePath: resolved,
-      type: 'sourceFile',
+    if (moduleName === 'react-dom' || moduleName.startsWith('react-dom/')) {
+      const resolved = require.resolve(moduleName, { paths: [projectRoot, monorepoRoot] })
+      return { filePath: resolved, type: 'sourceFile' }
     }
-  }
-
-  // Guarantee react-native root module
-  if (moduleName === 'react-native') {
-    const resolved = require.resolve('react-native', { paths: [projectRoot] })
-    return {
-      filePath: resolved,
-      type: 'sourceFile',
+    if (moduleName === 'react-native') {
+      const resolved = require.resolve('react-native', { paths: [projectRoot, monorepoRoot] })
+      return { filePath: resolved, type: 'sourceFile' }
     }
-  }
-
-  // Guarantee primitives and state management singletons
-  if (
-    moduleName === '@rn-primitives/slot' ||
-    moduleName === '@rn-primitives/portal' ||
-    moduleName === 'zustand'
-  ) {
-    const resolved = require.resolve(moduleName, { paths: [projectRoot] })
-    return {
-      filePath: resolved,
-      type: 'sourceFile',
-    }
-  }
+  } catch {}
 
   if (defaultResolveRequest) {
     return defaultResolveRequest(context, moduleName, platform)
@@ -89,8 +94,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform)
 }
 
-// 5. Prevent Metro from looking up directory tree and finding duplicate copies of React
-config.resolver.disableHierarchicalLookup = true
 config.resolver.unstable_enablePackageExports = true
 
 module.exports = withNativeWind(config, { input: './global.css' })
