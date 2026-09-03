@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -10,6 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { UniversalLayout } from '../../../components/layout'
 import { CategoryFilter } from './CategoryFilter'
 import { DesignSystemHeader } from './DesignSystemHeader'
@@ -495,6 +497,85 @@ export function DesignSystemScreen() {
             ]}
           >
             {listContent}
+
+            {/* Mobile Full-Screen Preview Modal */}
+            {isMobileDetailOpen && selectedEntry && (
+              <Modal
+                visible={isMobileDetailOpen}
+                animationType='slide'
+                presentationStyle='fullScreen'
+                onRequestClose={() => setIsMobileDetailOpen(false)}
+              >
+                <SafeAreaView
+                  edges={['top', 'bottom']}
+                  style={[
+                    styles.mobileModalSafeArea,
+                    { backgroundColor: colors.background },
+                  ]}
+                >
+                  {/* Full-Screen Header with Close Cross on Right */}
+                  <View
+                    style={[
+                      styles.mobileModalHeader,
+                      {
+                        backgroundColor: colors.background,
+                        borderBottomColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <View style={styles.mobileModalTitleBox}>
+                      <Text
+                        style={[
+                          styles.mobileModalTitle,
+                          { color: colors.foreground },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {selectedEntry.name}
+                      </Text>
+                      <ComponentBadge
+                        category={selectedEntry.category}
+                        badgeText={selectedEntry.badge}
+                      />
+                    </View>
+
+                    <Pressable
+                      onPress={() => setIsMobileDetailOpen(false)}
+                      style={({ pressed }) => [
+                        styles.mobileCloseBtn,
+                        {
+                          backgroundColor: pressed
+                            ? colors.secondary
+                            : isDark
+                            ? colors.card
+                            : colors.secondary,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                      hitSlop={10}
+                      accessibilityRole='button'
+                      accessibilityLabel='Close full screen preview'
+                    >
+                      <X
+                        size={18}
+                        color={colors.foreground}
+                        strokeWidth={2.4}
+                      />
+                    </Pressable>
+                  </View>
+
+                  {/* Full Stage Preview Body */}
+                  <View
+                    style={[
+                      styles.mobileModalBody,
+                      { backgroundColor: colors.background },
+                    ]}
+                  >
+                    <StagePreviewRenderer entry={selectedEntry} />
+                  </View>
+                </SafeAreaView>
+              </Modal>
+            )}
           </View>
         )}
       </KeyboardAvoidingView>
@@ -679,5 +760,40 @@ const styles = StyleSheet.create({
   emptyInspectorText: {
     fontSize: 13,
     fontFamily: 'Open Sans',
+  },
+  mobileModalSafeArea: {
+    flex: 1,
+  },
+  mobileModalHeader: {
+    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  mobileModalTitleBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    paddingRight: 8,
+  },
+  mobileModalTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Open Sans',
+    letterSpacing: -0.2,
+  },
+  mobileCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mobileModalBody: {
+    flex: 1,
   },
 })

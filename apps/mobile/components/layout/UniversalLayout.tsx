@@ -93,7 +93,10 @@ export function UniversalLayout({
                     { backgroundColor: colors.sidebar || colors.background },
                   ]}
                 >
-                  <AppSidebar onNavigate={closeMobileDrawer} />
+                  <AppSidebar
+                    onNavigate={closeMobileDrawer}
+                    onToggleCollapse={closeMobileDrawer}
+                  />
                 </View>
               </View>
             </Modal>
