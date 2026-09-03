@@ -225,30 +225,38 @@ export function AppSidebar({
       >
         {/* Expanded: Menu label + Toggle button on the right */}
         {!isCollapsed ? (
-          <View style={styles.menuHeaderRow}>
-            <Text
-              style={[styles.groupHeader, { color: colors.mutedForeground }]}
-            >
-              Menu
-            </Text>
-            {onToggleCollapse && (
-              <Pressable
-                onPress={onToggleCollapse}
-                style={({ pressed }) => [
-                  styles.toggleBtn,
-                  pressed && { backgroundColor: colors.secondary },
-                ]}
-                accessibilityRole='button'
-                accessibilityLabel='Collapse Sidebar'
-                hitSlop={8}
+          <View style={styles.menuHeaderContainer}>
+            <View style={styles.menuHeaderRow}>
+              <Text
+                style={[styles.groupHeader, { color: colors.mutedForeground }]}
               >
-                <PanelLeftClose
-                  size={16}
-                  color={colors.mutedForeground}
-                  strokeWidth={2}
-                />
-              </Pressable>
-            )}
+                Menu
+              </Text>
+              {onToggleCollapse && (
+                <Pressable
+                  onPress={onToggleCollapse}
+                  style={({ pressed }) => [
+                    styles.toggleBtn,
+                    pressed && { backgroundColor: colors.secondary },
+                  ]}
+                  accessibilityRole='button'
+                  accessibilityLabel='Collapse Sidebar'
+                  hitSlop={8}
+                >
+                  <PanelLeftClose
+                    size={16}
+                    color={colors.mutedForeground}
+                    strokeWidth={2}
+                  />
+                </Pressable>
+              )}
+            </View>
+            <View
+              style={[
+                styles.menuHeaderDivider,
+                { backgroundColor: colors.sidebarBorder || colors.border },
+              ]}
+            />
           </View>
         ) : (
           /* Collapsed: Toggle button aligned vertically with menu item icons */
@@ -714,8 +722,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 56,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
+    borderBottomWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -776,16 +783,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navContent: {
-    padding: 8,
+    paddingHorizontal: 8,
+    paddingTop: 4,
+    paddingBottom: 8,
     gap: 2,
+  },
+  menuHeaderContainer: {
+    marginBottom: 8,
   },
   menuHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 8,
-    marginTop: 4,
-    marginBottom: 4,
+    paddingVertical: 2,
+    marginBottom: 6,
+  },
+  menuHeaderDivider: {
+    height: 1,
+    width: '100%',
+    opacity: 0.6,
   },
   groupHeader: {
     fontSize: 11,
@@ -839,8 +856,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     height: 60,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(226, 232, 240, 0.8)',
+    borderTopWidth: 0,
     paddingHorizontal: 10,
     justifyContent: 'center',
   },
