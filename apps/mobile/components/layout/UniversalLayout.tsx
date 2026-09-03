@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 import {
   Modal,
   Platform,
@@ -11,6 +11,22 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { AppSidebar } from './AppSidebar'
 import { AppHeader } from './AppHeader'
 import { useTheme } from '@/providers/theme-provider'
+
+interface DrawerContextType {
+  openMobileDrawer: () => void
+  closeMobileDrawer: () => void
+  isMobileDrawerOpen: boolean
+}
+
+const DrawerContext = createContext<DrawerContextType>({
+  openMobileDrawer: () => {},
+  closeMobileDrawer: () => {},
+  isMobileDrawerOpen: false,
+})
+
+export function useDrawer() {
+  return useContext(DrawerContext)
+}
 
 interface UniversalLayoutProps {
   title: string
@@ -29,71 +45,105 @@ export function UniversalLayout({
 }: UniversalLayoutProps) {
   const { width } = useWindowDimensions()
   const isDesktop = width >= 1024
-  const { colors, resolvedMode } = useTheme()
+  const { colors } = useTheme()
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
 
+  const openMobileDrawer = () => setIsMobileDrawerOpen(true)
+  const closeMobileDrawer = () => setIsMobileDrawerOpen(false)
+
   return (
-    <SafeAreaView
-      edges={['top', 'bottom']}
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    <DrawerContext.Provider
+      value={{ openMobileDrawer, closeMobileDrawer, isMobileDrawerOpen }}
     >
-      <View style={[styles.rootContainer, { backgroundColor: colors.background }]}>
-        {/* Desktop Sidebar */}
-        {isDesktop && (
-          <AppSidebar
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          />
-        )}
-
-        {/* Mobile / Native Drawer Modal */}
-        {!isDesktop && (
-          <Modal
-            visible={isMobileDrawerOpen}
-            animationType='fade'
-            transparent
-            onRequestClose={() => setIsMobileDrawerOpen(false)}
-          >
-            <View style={styles.modalBackdrop}>
-              <Pressable
-                style={styles.backdropPressable}
-                onPress={() => setIsMobileDrawerOpen(false)}
-              />
-              <View
-                style={[
-                  styles.drawerContainer,
-                  { backgroundColor: colors.sidebar || colors.background },
-                ]}
-              >
-                <AppSidebar onNavigate={() => setIsMobileDrawerOpen(false)} />
-              </View>
-            </View>
-          </Modal>
-        )}
-
-        {/* Main Content Area */}
-        <View style={styles.mainContent}>
-          {!hideHeader && (
-            <AppHeader
-              title={title}
-              isDesktop={isDesktop}
-              isSidebarCollapsed={isSidebarCollapsed}
-              onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
-              onSearchPress={onSearchPress}
-            >
-              {headerChildren}
-            </AppHeader>
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={[styles.safeArea, { backgroundColor: colors.background }]}
+      >
+        <View
+          style={[styles.rootContainer, { backgroundColor: colors.background }]}
+        >
+          {/* Desktop Sidebar */}
+          {isDesktop && (
+            <AppSidebar
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={() =>
+                setIsSidebarCollapsed(!isSidebarCollapsed)
+              }
+            />
           )}
 
-          <View style={[styles.childContainer, { backgroundColor: colors.background }]}>
-            {children}
+          {/* Mobile / Native Drawer Modal */}
+          {!isDesktop && (
+            <Modal
+              visible={isMobileDrawerOpen}
+              animationType='fade'
+              transparent
+              onRequestClose={closeMobileDrawer}
+            >
+              <View style={styles.modalBackdrop}>
+                <Pressable
+                  style={styles.backdropPressable}
+                  onPress={closeMobileDrawer}
+                />
+                <View
+                  style={[
+                    styles.drawerContainer,
+                    { backgroundColor: colors.sidebar || colors.background },
+                  ]}
+                >
+                  <AppSidebar onNavigate={closeMobileDrawer} />
+                </View>
+              </View>
+            </Modal>
+          )}
+
+          {/* Main Content Area */}
+          <View style={styles.mainContent}>
+            {/* AppHeader is displayed on desktop, or when not hidden */}
+            {!hideHeader && isDesktop && (
+              <AppHeader
+                title={title}
+                isDesktop={isDesktop}
+                isSidebarCollapsed={isSidebarCollapsed}
+                onToggleSidebar={() =>
+                  setIsSidebarCollapsed(!isSidebarCollapsed)
+                }
+                onOpenMobileDrawer={openMobileDrawer}
+                onSearchPress={onSearchPress}
+              >
+                {headerChildren}
+              </AppHeader>
+            )}
+
+            {!hideHeader && !isDesktop && (
+              <AppHeader
+                title={title}
+                isDesktop={isDesktop}
+                isSidebarCollapsed={isSidebarCollapsed}
+                onToggleSidebar={() =>
+                  setIsSidebarCollapsed(!isSidebarCollapsed)
+                }
+                onOpenMobileDrawer={openMobileDrawer}
+                onSearchPress={onSearchPress}
+              >
+                {headerChildren}
+              </AppHeader>
+            )}
+
+            <View
+              style={[
+                styles.childContainer,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              {children}
+            </View>
           </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </DrawerContext.Provider>
   )
 }
 
@@ -115,7 +165,7 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     flexDirection: 'row',
   },
   backdropPressable: {
@@ -123,8 +173,9 @@ const styles = StyleSheet.create({
   },
   drawerContainer: {
     width: 280,
+    maxWidth: '82%',
     height: '100%',
-    shadowColor: '#000',
+    shadowColor: '#000000',
     shadowOffset: { width: 4, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 16,

@@ -4,6 +4,7 @@ import type { GalleryEntry } from '../types'
 import { Telescope } from 'lucide-react-native'
 import { useTheme } from '@/providers/theme-provider'
 import { AppThemesPreview } from './previews/AppThemesPreview'
+import { PrimitivesShowcase } from './previews/PrimitivesShowcase'
 
 interface StagePreviewRendererProps {
   entry: GalleryEntry
@@ -13,7 +14,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
   const { colors, resolvedMode } = useTheme()
   const isDark = resolvedMode === 'dark'
 
-  // If the selected entry is App Theme & Colors, render the interactive Theme Settings!
+  // 1. Theme preview
   if (
     entry.id === 'app-themes-settings' ||
     entry.name === 'App Theme & Colors' ||
@@ -22,6 +23,16 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <AppThemesPreview />
   }
 
+  // 2. Primitives showcase
+  if (
+    entry.category === 'Primitives' ||
+    entry.id.startsWith('primitive-') ||
+    entry.filePath.startsWith('components/ui/')
+  ) {
+    return <PrimitivesShowcase entry={entry} />
+  }
+
+  // 3. Fallback coming soon
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.centerContent}>

@@ -452,7 +452,7 @@ export function DesignSystemScreen() {
   )
 
   return (
-    <UniversalLayout title='Design System'>
+    <UniversalLayout title='Design System' hideHeader={!isDesktop}>
       <KeyboardAvoidingView
         style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

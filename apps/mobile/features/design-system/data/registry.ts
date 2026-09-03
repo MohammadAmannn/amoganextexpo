@@ -616,5 +616,205 @@ export const galleryRegistry: GalleryEntry[] = [
     "badge": "Theme",
     "description": "Theme customizer from email settings featuring Catppuccin, Tokyo Night, Dracula, Nord, Gruvbox, Supabase, and dynamic CSS primary tokens.",
     "filePath": "src/features/email-settings/components/themes-tab.tsx"
+  },
+  {
+    "id": "primitive-button",
+    "name": "Button",
+    "category": "Primitives",
+    "badge": "Button",
+    "description": "Interactive button component with default, secondary, destructive, outline, ghost, link variants, and sm/lg sizing.",
+    "filePath": "components/ui/button.tsx"
+  },
+  {
+    "id": "primitive-badge",
+    "name": "Badge",
+    "category": "Primitives",
+    "badge": "Badge",
+    "description": "Status indicators and pill badges with default, secondary, outline, and destructive styling.",
+    "filePath": "components/ui/badge.tsx"
+  },
+  {
+    "id": "primitive-avatar",
+    "name": "Avatar",
+    "category": "Primitives",
+    "badge": "Avatar",
+    "description": "User profile avatar with image loading, fallback initials, online status indicator, and size presets.",
+    "filePath": "components/ui/avatar.tsx"
+  },
+  {
+    "id": "primitive-accordion",
+    "name": "Accordion",
+    "category": "Primitives",
+    "badge": "Accordion",
+    "description": "Collapsible interactive accordion list for FAQ sections and expandable configuration menus.",
+    "filePath": "components/ui/accordion.tsx"
+  },
+  {
+    "id": "primitive-alert",
+    "name": "Alert",
+    "category": "Primitives",
+    "badge": "Alert",
+    "description": "Informational, success, warning, and destructive banners.",
+    "filePath": "components/ui/alert.tsx"
+  },
+  {
+    "id": "primitive-alert-dialog",
+    "name": "Alert Dialog",
+    "category": "Primitives",
+    "badge": "Dialog",
+    "description": "Modal dialog for urgent confirmations and high-priority user actions.",
+    "filePath": "components/ui/alert-dialog.tsx"
+  },
+  {
+    "id": "primitive-dialog",
+    "name": "Dialog",
+    "category": "Primitives",
+    "badge": "Dialog",
+    "description": "Overlay modal dialog for multi-field forms, settings, and full task flows.",
+    "filePath": "components/ui/dialog.tsx"
+  },
+  {
+    "id": "primitive-card",
+    "name": "Card",
+    "category": "Primitives",
+    "badge": "Card",
+    "description": "Universal card container with header, description, divider, body metrics, and footer actions.",
+    "filePath": "components/ui/card.tsx"
+  },
+  {
+    "id": "primitive-checkbox",
+    "name": "Checkbox",
+    "category": "Primitives",
+    "badge": "Checkbox",
+    "description": "Interactive checkbox control for multi-selection and form agreements.",
+    "filePath": "components/ui/checkbox.tsx"
+  },
+  {
+    "id": "primitive-input",
+    "name": "Input & Textarea",
+    "category": "Primitives",
+    "badge": "Input",
+    "description": "Text input component with icon adornments, validation rings, and multiline textarea.",
+    "filePath": "components/ui/input.tsx"
+  },
+  {
+    "id": "primitive-toggle",
+    "name": "Toggle & Toggle Group",
+    "category": "Primitives",
+    "badge": "Toggle",
+    "description": "Two-state toggle button and formatting group options.",
+    "filePath": "components/ui/toggle.tsx"
+  },
+  {
+    "id": "primitive-tabs",
+    "name": "Tabs",
+    "category": "Primitives",
+    "badge": "Tabs",
+    "description": "Interactive multi-pane tab bar with smooth active state transition and themed panels.",
+    "filePath": "components/ui/tabs.tsx"
+  },
+  {
+    "id": "primitive-progress",
+    "name": "Progress",
+    "category": "Primitives",
+    "badge": "Progress",
+    "description": "Linear progress bar indicating upload status and goal completion.",
+    "filePath": "components/ui/progress.tsx"
+  },
+  {
+    "id": "primitive-skeleton",
+    "name": "Skeleton",
+    "category": "Primitives",
+    "badge": "Skeleton",
+    "description": "Animated shimmer placeholder elements for content loading states.",
+    "filePath": "components/ui/skeleton.tsx"
+  },
+  {
+    "id": "primitive-radio-group",
+    "name": "Radio Group",
+    "category": "Primitives",
+    "badge": "Radio",
+    "description": "Single-selection radio group for pricing tiers, plans, and options.",
+    "filePath": "components/ui/radio-group.tsx"
+  },
+  {
+    "id": "primitive-select",
+    "name": "Select",
+    "category": "Primitives",
+    "badge": "Select",
+    "description": "Dropdown select picker with search filtering and custom option items.",
+    "filePath": "components/ui/select.tsx"
+  },
+  {
+    "id": "primitive-menubar",
+    "name": "Menubar",
+    "category": "Primitives",
+    "badge": "Menubar",
+    "description": "Desktop-grade horizontal menubar with nested submenus and shortcut bindings.",
+    "filePath": "components/ui/menubar.tsx"
+  },
+  {
+    "id": "primitive-popover",
+    "name": "Popover",
+    "category": "Primitives",
+    "badge": "Popover",
+    "description": "Floating rich content popover anchored to an interactive trigger element.",
+    "filePath": "components/ui/popover.tsx"
+  },
+  {
+    "id": "primitive-tooltip",
+    "name": "Tooltip",
+    "category": "Primitives",
+    "badge": "Tooltip",
+    "description": "Helpful contextual tooltip popup on hover or focus.",
+    "filePath": "components/ui/tooltip.tsx"
+  },
+  {
+    "id": "primitive-hover-card",
+    "name": "Hover Card",
+    "category": "Primitives",
+    "badge": "Hover Card",
+    "description": "Rich profile and preview card displayed on mouse hover.",
+    "filePath": "components/ui/hover-card.tsx"
+  },
+  {
+    "id": "primitive-separator",
+    "name": "Separator",
+    "category": "Primitives",
+    "badge": "Separator",
+    "description": "Horizontal and vertical divider lines for content hierarchy.",
+    "filePath": "components/ui/separator.tsx"
+  },
+  {
+    "id": "primitive-aspect-ratio",
+    "name": "Aspect Ratio",
+    "category": "Primitives",
+    "badge": "Layout",
+    "description": "Responsive container maintaining exact aspect ratios (16:9, 4:3, 1:1).",
+    "filePath": "components/ui/aspect-ratio.tsx"
+  },
+  {
+    "id": "primitive-collapsible",
+    "name": "Collapsible",
+    "category": "Primitives",
+    "badge": "Collapsible",
+    "description": "Interactive expandable section for optional settings and details.",
+    "filePath": "components/ui/collapsible.tsx"
+  },
+  {
+    "id": "primitive-text",
+    "name": "Text & Typography",
+    "category": "Primitives",
+    "badge": "Typography",
+    "description": "Heading hierarchy (H1-H4), Lead, Paragraph, Blockquote, and Code typography.",
+    "filePath": "components/ui/text.tsx"
+  },
+  {
+    "id": "primitive-label",
+    "name": "Label",
+    "category": "Primitives",
+    "badge": "Label",
+    "description": "Accessible form field label component.",
+    "filePath": "components/ui/label.tsx"
   }
 ]

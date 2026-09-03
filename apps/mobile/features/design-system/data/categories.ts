@@ -19,6 +19,7 @@ import {
   Calendar,
   FileEdit,
   Palette,
+  Boxes,
 } from 'lucide-react-native'
 import type {
   GalleryCategory,
@@ -28,6 +29,7 @@ import type {
 
 export const GALLERY_CATEGORIES: GalleryCategory[] = [
   'All',
+  'Primitives',
   'Wizards',
   'Vouchers',
   'Kanban Board',
@@ -50,6 +52,11 @@ export const GALLERY_CATEGORIES: GalleryCategory[] = [
 ]
 
 export const CATEGORY_COLORS: Record<string, CategoryColorStyle> = {
+  Primitives: {
+    bg: 'rgba(59, 130, 246, 0.1)',
+    text: '#2563eb',
+    border: 'rgba(191, 219, 254, 0.6)',
+  },
   Wizards: {
     bg: 'rgba(139, 92, 246, 0.1)',
     text: '#7c3aed',
@@ -307,5 +314,13 @@ export const CATEGORY_CONFIG: Record<GalleryCategory, CategoryConfigItem> = {
     activeBorder: 'rgba(196, 181, 253, 0.6)',
     badgeActiveBg: 'rgba(139, 92, 246, 0.2)',
     badgeActiveText: '#7c3aed',
+  },
+  Primitives: {
+    icon: Boxes,
+    activeBg: 'rgba(59, 130, 246, 0.15)',
+    activeText: '#2563eb',
+    activeBorder: 'rgba(147, 197, 253, 0.6)',
+    badgeActiveBg: 'rgba(59, 130, 246, 0.2)',
+    badgeActiveText: '#2563eb',
   },
 }

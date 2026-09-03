@@ -2,6 +2,7 @@ import React from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { Command, Search, Bell } from 'lucide-react-native'
 import { useTheme } from '@/providers/theme-provider'
+import { useDrawer } from '@/components/layout/UniversalLayout'
 
 interface DesignSystemHeaderProps {
   onSearchPress?: () => void
@@ -13,6 +14,7 @@ export function DesignSystemHeader({
   onNotificationsPress,
 }: DesignSystemHeaderProps) {
   const { colors } = useTheme()
+  const { openMobileDrawer } = useDrawer()
 
   return (
     <View
@@ -24,9 +26,19 @@ export function DesignSystemHeader({
         },
       ]}
     >
-      <View style={styles.leftGroup}>
+      <Pressable
+        style={styles.leftGroup}
+        onPress={openMobileDrawer}
+        hitSlop={8}
+        accessibilityRole='button'
+        accessibilityLabel='Open Navigation Menu'
+      >
         <View style={[styles.logoBox, { backgroundColor: colors.primary }]}>
-          <Command size={16} color={colors.primaryForeground || '#ffffff'} strokeWidth={2.2} />
+          <Command
+            size={16}
+            color={colors.primaryForeground || '#ffffff'}
+            strokeWidth={2.2}
+          />
         </View>
         <Text
           style={[styles.headerTitle, { color: colors.foreground }]}
@@ -34,7 +46,7 @@ export function DesignSystemHeader({
         >
           Design System
         </Text>
-      </View>
+      </Pressable>
 
       <View style={styles.rightGroup}>
         <Pressable

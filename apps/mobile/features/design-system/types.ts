@@ -21,6 +21,7 @@ export type GalleryCategory =
   | 'Calendar'
   | 'Rich Editor'
   | 'Theme'
+  | 'Primitives'
 
 export interface GalleryEntry {
   id: string
