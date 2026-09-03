@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react'
 import { Platform, useColorScheme, View } from 'react-native'
-import { vars } from 'nativewind'
 import {
   colorThemes,
   findTheme,
@@ -64,15 +63,25 @@ export function getResolvedThemeColors(
 ): ThemeColors {
   const isDark = mode === 'dark'
   const currentTheme = theme || colorThemes[0]
-  const preview = currentTheme?.preview || (isDark ? '#a855f7' : '#7c3aed')
-  const colorsList = currentTheme?.colors || ['#7c3aed', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+  
+  // Clean valid hex primary color
+  let primaryHex = currentTheme?.preview || (isDark ? '#a855f7' : '#7c3aed')
+  if (!primaryHex.startsWith('#')) {
+    primaryHex = currentTheme?.colors?.[0] || (isDark ? '#a855f7' : '#18181b')
+  }
+
+  // Zinc theme primary in light mode is dark slate #18181b, in dark mode #fafafa
+  if (currentTheme?.name === 'zinc') {
+    primaryHex = isDark ? '#fafafa' : '#18181b'
+  }
 
   const bg = isDark ? '#09090b' : '#ffffff'
   const fg = isDark ? '#fafafa' : '#09090b'
   const card = isDark ? '#18181b' : '#ffffff'
   const cardFg = fg
-  const primary = preview
-  const primaryFg = isDark ? '#09090b' : '#ffffff'
+  const primary = primaryHex
+  // Contrast foreground for primary elements (e.g. badges, logo box)
+  const primaryFg = (primaryHex === '#fafafa' || primaryHex === '#ffffff') ? '#09090b' : '#ffffff'
   const secondary = isDark ? '#27272a' : '#f4f4f5'
   const secondaryFg = fg
   const muted = isDark ? '#27272a' : '#f4f4f5'
@@ -113,11 +122,11 @@ export function getResolvedThemeColors(
     sidebarAccentForeground: fg,
     sidebarBorder: border,
     sidebarRing: ring,
-    chart1: colorsList[0] || '#4f46e5',
-    chart2: colorsList[1] || '#06b6d4',
-    chart3: colorsList[2] || '#10b981',
-    chart4: colorsList[3] || '#f59e0b',
-    chart5: colorsList[4] || '#ef4444',
+    chart1: currentTheme?.colors?.[0] || '#4f46e5',
+    chart2: currentTheme?.colors?.[1] || '#06b6d4',
+    chart3: currentTheme?.colors?.[2] || '#10b981',
+    chart4: currentTheme?.colors?.[3] || '#f59e0b',
+    chart5: currentTheme?.colors?.[4] || '#ef4444',
   }
 }
 
