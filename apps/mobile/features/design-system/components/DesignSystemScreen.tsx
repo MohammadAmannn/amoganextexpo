@@ -31,11 +31,15 @@ import {
   Sparkles,
   X,
   ArrowLeft,
+  Palette,
 } from 'lucide-react-native'
+import { useTheme } from '@/providers/theme-provider'
 
 type Viewport = 'desktop' | 'tablet' | 'mobile'
 
 export function DesignSystemScreen() {
+  const { openThemeDrawer, colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
   const { width } = useWindowDimensions()
   const isDesktop = width >= 1024
 
@@ -51,45 +55,38 @@ export function DesignSystemScreen() {
 
   const searchInputRef = useRef<TextInput | null>(null)
 
-  // Calculate counts per category
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      All: galleryRegistry.length,
+  // Filter entries
+  const filteredComponents = useMemo(() => {
+    let result = galleryRegistry
+
+    if (activeCategory !== 'All') {
+      result = result.filter((item) => item.category === activeCategory)
     }
-    for (const cat of GALLERY_CATEGORIES) {
-      if (cat === 'All') continue
-      counts[cat] = galleryRegistry.filter((item) => item.category === cat).length
+
+    if (searchQuery.trim().length > 0) {
+      const q = searchQuery.toLowerCase().trim()
+      result = result.filter(
+        (item) =>
+          item.name.toLowerCase().includes(q) ||
+          item.category.toLowerCase().includes(q) ||
+          item.filePath.toLowerCase().includes(q)
+      )
+    }
+
+    return result
+  }, [activeCategory, searchQuery])
+
+  // Compute category counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: galleryRegistry.length }
+    for (const item of galleryRegistry) {
+      counts[item.category] = (counts[item.category] || 0) + 1
     }
     return counts
   }, [])
 
-  // Filter components matching category and query
-  const filteredComponents = useMemo(() => {
-    return galleryRegistry.filter((entry) => {
-      const matchesCategory =
-        activeCategory === 'All' || entry.category === activeCategory
-      const q = searchQuery.trim().toLowerCase()
-      const matchesSearch =
-        !q ||
-        entry.name.toLowerCase().includes(q) ||
-        entry.category.toLowerCase().includes(q) ||
-        entry.description.toLowerCase().includes(q) ||
-        entry.id.toLowerCase().includes(q)
-      return matchesCategory && matchesSearch
-    })
-  }, [activeCategory, searchQuery])
-
   const handleCategorySelect = (cat: GalleryCategory) => {
     setActiveCategory(cat)
-    setSearchQuery('')
-    const firstMatch =
-      cat === 'All'
-        ? galleryRegistry[0]
-        : galleryRegistry.find((c) => c.category === cat)
-    if (firstMatch) {
-      setSelectedEntry(firstMatch)
-      setActiveTab('preview')
-    }
   }
 
   const handleSearchChange = (text: string) => {
@@ -117,15 +114,8 @@ export function DesignSystemScreen() {
     setTimeout(() => setCopiedCode(false), 2000)
   }
 
-  const viewportWidthStyle: { maxWidth?: number; width?: '100%' } =
-    viewport === 'tablet'
-      ? { maxWidth: 640 }
-      : viewport === 'mobile'
-      ? { maxWidth: 360 }
-      : { width: '100%' }
-
   const listContent = (
-    <View style={styles.navColumn}>
+    <View style={[styles.navColumn, { backgroundColor: colors.background }]}>
       {!isDesktop && (
         <DesignSystemHeader
           onSearchPress={handleHeaderSearchPress}
@@ -146,7 +136,7 @@ export function DesignSystemScreen() {
         onSelectCategory={handleCategorySelect}
       />
 
-      <View style={styles.listContainer}>
+      <View style={[styles.listContainer, { backgroundColor: colors.background }]}>
         <DesignSystemList
           entries={filteredComponents}
           selectedId={selectedEntry?.id ?? null}
@@ -159,9 +149,17 @@ export function DesignSystemScreen() {
   )
 
   const inspectorContent = selectedEntry ? (
-    <View style={styles.inspectorContainer}>
+    <View style={[styles.inspectorContainer, { backgroundColor: colors.background }]}>
       {/* Top Stage Control Header */}
-      <View style={styles.inspectorHeader}>
+      <View
+        style={[
+          styles.inspectorHeader,
+          {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <View style={styles.inspectorLeftHeader}>
           {!isDesktop && (
             <Pressable
@@ -169,13 +167,16 @@ export function DesignSystemScreen() {
               style={styles.backBtn}
               hitSlop={8}
             >
-              <ArrowLeft size={18} color='#0f172a' />
+              <ArrowLeft size={18} color={colors.foreground} />
             </Pressable>
           )}
 
           <View style={styles.titleInfo}>
             <View style={styles.inspectorTitleRow}>
-              <Text style={styles.inspectorTitle} numberOfLines={1}>
+              <Text
+                style={[styles.inspectorTitle, { color: colors.foreground }]}
+                numberOfLines={1}
+              >
                 {selectedEntry.name}
               </Text>
               <ComponentBadge
@@ -183,30 +184,48 @@ export function DesignSystemScreen() {
                 badgeText={selectedEntry.badge}
               />
             </View>
-            <Text style={styles.inspectorFilePath} numberOfLines={1}>
+            <Text
+              style={[
+                styles.inspectorFilePath,
+                { color: colors.mutedForeground },
+              ]}
+              numberOfLines={1}
+            >
               {selectedEntry.filePath}
             </Text>
           </View>
         </View>
 
-        {/* Stage Toolbar (Preview / Code tabs + Viewport switcher + Copy) */}
+        {/* Stage Toolbar */}
         <View style={styles.stageToolbar}>
           <View style={styles.tabGroup}>
             <Pressable
               onPress={() => setActiveTab('preview')}
               style={[
                 styles.stageTabBtn,
-                activeTab === 'preview' && styles.stageTabBtnActive,
+                activeTab === 'preview' && {
+                  borderBottomColor: colors.primary,
+                },
               ]}
             >
               <Eye
                 size={13}
-                color={activeTab === 'preview' ? '#0f172a' : '#64748b'}
+                color={
+                  activeTab === 'preview'
+                    ? colors.primary || colors.foreground
+                    : colors.mutedForeground
+                }
               />
               <Text
                 style={[
                   styles.stageTabText,
-                  activeTab === 'preview' && styles.stageTabTextActive,
+                  {
+                    color:
+                      activeTab === 'preview'
+                        ? colors.primary || colors.foreground
+                        : colors.mutedForeground,
+                    fontWeight: activeTab === 'preview' ? '700' : '500',
+                  },
                 ]}
               >
                 Preview
@@ -217,17 +236,29 @@ export function DesignSystemScreen() {
               onPress={() => setActiveTab('code')}
               style={[
                 styles.stageTabBtn,
-                activeTab === 'code' && styles.stageTabBtnActive,
+                activeTab === 'code' && {
+                  borderBottomColor: colors.primary,
+                },
               ]}
             >
               <Code2
                 size={13}
-                color={activeTab === 'code' ? '#0f172a' : '#64748b'}
+                color={
+                  activeTab === 'code'
+                    ? colors.primary || colors.foreground
+                    : colors.mutedForeground
+                }
               />
               <Text
                 style={[
                   styles.stageTabText,
-                  activeTab === 'code' && styles.stageTabTextActive,
+                  {
+                    color:
+                      activeTab === 'code'
+                        ? colors.primary || colors.foreground
+                        : colors.mutedForeground,
+                    fontWeight: activeTab === 'code' ? '700' : '500',
+                  },
                 ]}
               >
                 Code
@@ -242,39 +273,57 @@ export function DesignSystemScreen() {
                 onPress={() => setViewport('desktop')}
                 style={[
                   styles.vpBtn,
-                  viewport === 'desktop' && styles.vpBtnActive,
+                  viewport === 'desktop' && {
+                    backgroundColor: isDark ? colors.card : colors.secondary,
+                  },
                 ]}
                 hitSlop={6}
               >
                 <Monitor
                   size={14}
-                  color={viewport === 'desktop' ? '#0f172a' : '#94a3b8'}
+                  color={
+                    viewport === 'desktop'
+                      ? colors.foreground
+                      : colors.mutedForeground
+                  }
                 />
               </Pressable>
               <Pressable
                 onPress={() => setViewport('tablet')}
                 style={[
                   styles.vpBtn,
-                  viewport === 'tablet' && styles.vpBtnActive,
+                  viewport === 'tablet' && {
+                    backgroundColor: isDark ? colors.card : colors.secondary,
+                  },
                 ]}
                 hitSlop={6}
               >
                 <Tablet
                   size={14}
-                  color={viewport === 'tablet' ? '#0f172a' : '#94a3b8'}
+                  color={
+                    viewport === 'tablet'
+                      ? colors.foreground
+                      : colors.mutedForeground
+                  }
                 />
               </Pressable>
               <Pressable
                 onPress={() => setViewport('mobile')}
                 style={[
                   styles.vpBtn,
-                  viewport === 'mobile' && styles.vpBtnActive,
+                  viewport === 'mobile' && {
+                    backgroundColor: isDark ? colors.card : colors.secondary,
+                  },
                 ]}
                 hitSlop={6}
               >
                 <Smartphone
                   size={14}
-                  color={viewport === 'mobile' ? '#0f172a' : '#94a3b8'}
+                  color={
+                    viewport === 'mobile'
+                      ? colors.foreground
+                      : colors.mutedForeground
+                  }
                 />
               </Pressable>
             </View>
@@ -285,6 +334,10 @@ export function DesignSystemScreen() {
             onPress={handleCopyCode}
             style={({ pressed }) => [
               styles.copyBtn,
+              {
+                backgroundColor: isDark ? colors.card : colors.secondary,
+                borderColor: colors.border,
+              },
               pressed && styles.btnPressed,
             ]}
           >
@@ -295,16 +348,42 @@ export function DesignSystemScreen() {
               </>
             ) : (
               <>
-                <Copy size={12} color='#475569' />
-                <Text style={styles.copyBtnText}>Snippet</Text>
+                <Copy size={12} color={colors.mutedForeground} />
+                <Text style={[styles.copyBtnText, { color: colors.foreground }]}>
+                  Snippet
+                </Text>
               </>
             )}
+          </Pressable>
+
+          {/* Theme Settings Trigger Button */}
+          <Pressable
+            onPress={openThemeDrawer}
+            style={({ pressed }) => [
+              styles.copyBtn,
+              {
+                backgroundColor: isDark ? colors.card : colors.secondary,
+                borderColor: colors.border,
+              },
+              pressed && styles.btnPressed,
+            ]}
+            accessibilityLabel='Theme Settings'
+          >
+            <Palette size={13} color={colors.primary} />
+            <Text style={[styles.copyBtnText, { color: colors.foreground }]}>
+              Theme
+            </Text>
           </Pressable>
         </View>
       </View>
 
       {/* Stage Canvas Area */}
-      <View style={styles.stageFullWrapper}>
+      <View
+        style={[
+          styles.stageFullWrapper,
+          { backgroundColor: colors.background },
+        ]}
+      >
         {activeTab === 'preview' ? (
           <StagePreviewRenderer entry={selectedEntry} />
         ) : (
@@ -313,20 +392,39 @@ export function DesignSystemScreen() {
             style={styles.stageScroll}
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.codeContainer}>
-              <View style={styles.codeHeader}>
+            <View
+              style={[
+                styles.codeContainer,
+                { borderColor: colors.border },
+              ]}
+            >
+              <View
+                style={[
+                  styles.codeHeader,
+                  {
+                    backgroundColor: isDark ? '#18181b' : '#27272a',
+                    borderBottomColor: colors.border,
+                  },
+                ]}
+              >
                 <View style={styles.dotGroup}>
-                  <View style={[styles.codeDot, { backgroundColor: '#ef4444' }]} />
-                  <View style={[styles.codeDot, { backgroundColor: '#f59e0b' }]} />
-                  <View style={[styles.codeDot, { backgroundColor: '#10b981' }]} />
+                  <View
+                    style={[styles.codeDot, { backgroundColor: '#ef4444' }]}
+                  />
+                  <View
+                    style={[styles.codeDot, { backgroundColor: '#eab308' }]}
+                  />
+                  <View
+                    style={[styles.codeDot, { backgroundColor: '#22c55e' }]}
+                  />
                 </View>
                 <Text style={styles.codeHeaderText}>
-                  {selectedEntry.name} — usage snippet
+                  {selectedEntry.name}.tsx
                 </Text>
               </View>
               <View style={styles.codeBody}>
                 <Text style={styles.codeText}>
-                  {`import { ${selectedEntry.name.replace(/\\s+/g, '')} } from '${selectedEntry.filePath}'\\n\\nexport function Example() {\\n  return (\\n    <${selectedEntry.name.replace(/\\s+/g, '')} />\\n  )\\n}`}
+                  {`// Import ${selectedEntry.name}\nimport { ${selectedEntry.name} } from '${selectedEntry.filePath}'\n\nexport default function Example() {\n  return <${selectedEntry.name} />\n}`}
                 </Text>
               </View>
             </View>
@@ -335,33 +433,69 @@ export function DesignSystemScreen() {
       </View>
     </View>
   ) : (
-    <View style={styles.emptyInspector}>
-      <Sparkles size={32} color='#94a3b8' />
-      <Text style={styles.emptyInspectorText}>
-        Select a component from the list to inspect
+    <View
+      style={[
+        styles.emptyInspector,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      <Sparkles size={32} color={colors.mutedForeground} />
+      <Text
+        style={[
+          styles.emptyInspectorText,
+          { color: colors.mutedForeground },
+        ]}
+      >
+        Select a component to inspect
       </Text>
     </View>
   )
 
   return (
-    <UniversalLayout
-      title='Design System'
-      hideHeader={!isDesktop}
-      onSearchPress={handleHeaderSearchPress}
-    >
+    <UniversalLayout title='Design System'>
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {isDesktop ? (
-          <View style={styles.desktopSplitView}>
-            <View style={styles.desktopSidebarPane}>{listContent}</View>
-            <View style={styles.desktopMainPane}>{inspectorContent}</View>
+          <View
+            style={[
+              styles.desktopLayout,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            {/* Left Nav Pane */}
+            <View
+              style={[
+                styles.desktopNavPane,
+                {
+                  backgroundColor: colors.background,
+                  borderRightColor: colors.border,
+                },
+              ]}
+            >
+              {listContent}
+            </View>
+
+            {/* Right Main Pane */}
+            <View
+              style={[
+                styles.desktopMainPane,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              {inspectorContent}
+            </View>
           </View>
-        ) : isMobileDetailOpen ? (
-          inspectorContent
         ) : (
-          listContent
+          <View
+            style={[
+              styles.mobileLayout,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            {listContent}
+          </View>
         )}
       </KeyboardAvoidingView>
     </UniversalLayout>
@@ -371,40 +505,34 @@ export function DesignSystemScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
-  desktopSplitView: {
+  desktopLayout: {
     flex: 1,
     flexDirection: 'row',
   },
-  desktopSidebarPane: {
-    width: 340,
+  mobileLayout: {
+    flex: 1,
+  },
+  desktopNavPane: {
+    width: 320,
     borderRightWidth: 1,
-    borderRightColor: 'rgba(226, 232, 240, 0.8)',
-    backgroundColor: '#ffffff',
   },
   desktopMainPane: {
     flex: 1,
-    backgroundColor: '#fafaf9',
   },
   navColumn: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   listContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   inspectorContainer: {
     flex: 1,
-    backgroundColor: '#fafaf9',
   },
   inspectorHeader: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -431,12 +559,10 @@ const styles = StyleSheet.create({
   inspectorTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
     fontFamily: 'Open Sans',
   },
   inspectorFilePath: {
     fontSize: 10,
-    color: '#94a3b8',
     fontFamily: 'Open Sans',
     marginTop: 1,
   },
@@ -458,18 +584,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  stageTabBtnActive: {
-    borderBottomColor: '#0f172a',
-  },
   stageTabText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#64748b',
     fontFamily: 'Open Sans',
-  },
-  stageTabTextActive: {
-    color: '#0f172a',
-    fontWeight: '700',
   },
   viewportGroup: {
     flexDirection: 'row',
@@ -480,16 +597,11 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 4,
   },
-  vpBtnActive: {
-    backgroundColor: '#f1f5f9',
-  },
   copyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -497,7 +609,6 @@ const styles = StyleSheet.create({
   copyBtnText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#475569',
     fontFamily: 'Open Sans',
   },
   copyBtnTextSuccess: {
@@ -513,15 +624,9 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: '#ffffff',
   },
   stageScroll: {
     flex: 1,
-  },
-  stageScrollContent: {
-    padding: 16,
-    alignSelf: 'center',
-    width: '100%',
   },
   codeScrollContent: {
     padding: 16,
@@ -530,7 +635,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#09090b',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#27272a',
     overflow: 'hidden',
     marginTop: 8,
   },
@@ -541,8 +645,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#27272a',
-    backgroundColor: '#18181b',
   },
   dotGroup: {
     flexDirection: 'row',
@@ -576,7 +678,6 @@ const styles = StyleSheet.create({
   },
   emptyInspectorText: {
     fontSize: 13,
-    color: '#94a3b8',
     fontFamily: 'Open Sans',
   },
 })

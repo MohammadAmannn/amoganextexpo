@@ -15,6 +15,8 @@ import {
   OpenSans_800ExtraBold,
 } from '@expo-google-fonts/open-sans'
 
+import { ThemeSettingsDrawer } from '@/components/theme/ThemeSettingsDrawer'
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     'Open Sans': OpenSans_400Regular,
@@ -31,6 +33,7 @@ export default function RootLayout() {
       <AuthProvider>
         <StatusBar style='auto' />
         <Stack screenOptions={{ headerShown: false }} />
+        <ThemeSettingsDrawer />
         <PortalHost />
       </AuthProvider>
     </ThemeProvider>

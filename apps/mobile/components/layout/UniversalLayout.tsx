@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AppSidebar } from './AppSidebar'
 import { AppHeader } from './AppHeader'
+import { useTheme } from '@/providers/theme-provider'
 
 interface UniversalLayoutProps {
   title: string
@@ -28,13 +29,17 @@ export function UniversalLayout({
 }: UniversalLayoutProps) {
   const { width } = useWindowDimensions()
   const isDesktop = width >= 1024
+  const { colors, resolvedMode } = useTheme()
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
-      <View style={styles.rootContainer}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
+      <View style={[styles.rootContainer, { backgroundColor: colors.background }]}>
         {/* Desktop Sidebar */}
         {isDesktop && (
           <AppSidebar
@@ -56,7 +61,12 @@ export function UniversalLayout({
                 style={styles.backdropPressable}
                 onPress={() => setIsMobileDrawerOpen(false)}
               />
-              <View style={styles.drawerContainer}>
+              <View
+                style={[
+                  styles.drawerContainer,
+                  { backgroundColor: colors.sidebar || colors.background },
+                ]}
+              >
                 <AppSidebar onNavigate={() => setIsMobileDrawerOpen(false)} />
               </View>
             </View>
@@ -78,7 +88,9 @@ export function UniversalLayout({
             </AppHeader>
           )}
 
-          <View style={styles.childContainer}>{children}</View>
+          <View style={[styles.childContainer, { backgroundColor: colors.background }]}>
+            {children}
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -88,12 +100,10 @@ export function UniversalLayout({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   rootContainer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
   },
   mainContent: {
     flex: 1,
@@ -102,7 +112,6 @@ const styles = StyleSheet.create({
   },
   childContainer: {
     flex: 1,
-    backgroundColor: '#fafaf9',
   },
   modalBackdrop: {
     flex: 1,
@@ -115,7 +124,6 @@ const styles = StyleSheet.create({
   drawerContainer: {
     width: 280,
     height: '100%',
-    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 0 },
     shadowOpacity: 0.15,

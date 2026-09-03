@@ -2,6 +2,7 @@ import React from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { ComponentBadge } from './ComponentBadge'
 import type { GalleryEntry } from '../types'
+import { useTheme } from '@/providers/theme-provider'
 
 interface DesignSystemCardProps {
   entry: GalleryEntry
@@ -14,6 +15,8 @@ export function DesignSystemCard({
   isSelected,
   onSelect,
 }: DesignSystemCardProps) {
+  const { colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
   const fileName = entry.filePath.split('/').pop() || entry.filePath
 
   return (
@@ -21,17 +24,40 @@ export function DesignSystemCard({
       onPress={() => onSelect(entry)}
       style={({ pressed }) => [
         styles.card,
-        isSelected ? styles.cardSelected : styles.cardDefault,
-        pressed && styles.cardPressed,
+        isSelected
+          ? {
+              backgroundColor: isDark
+                ? 'rgba(255, 255, 255, 0.08)'
+                : 'rgba(99, 102, 241, 0.08)',
+              borderColor: colors.primary,
+            }
+          : {
+              backgroundColor: isDark ? colors.card : '#ffffff',
+              borderColor: colors.border,
+            },
+        pressed && { opacity: 0.8 },
       ]}
       accessibilityRole='button'
       accessibilityState={{ selected: isSelected }}
     >
-      {isSelected && <View style={styles.indicatorBar} />}
+      {isSelected && (
+        <View
+          style={[
+            styles.indicatorBar,
+            { backgroundColor: colors.primary },
+          ]}
+        />
+      )}
 
       <View style={styles.headerRow}>
         <Text
-          style={[styles.nameText, isSelected && styles.nameTextSelected]}
+          style={[
+            styles.nameText,
+            {
+              color: isSelected ? colors.foreground : colors.foreground,
+              fontWeight: isSelected ? '700' : '500',
+            },
+          ]}
           numberOfLines={1}
         >
           {entry.name}
@@ -39,7 +65,10 @@ export function DesignSystemCard({
         <ComponentBadge category={entry.category} badgeText={entry.badge} />
       </View>
 
-      <Text style={styles.fileNameText} numberOfLines={1}>
+      <Text
+        style={[styles.fileNameText, { color: colors.mutedForeground }]}
+        numberOfLines={1}
+      >
         {fileName}
       </Text>
     </Pressable>
@@ -57,27 +86,14 @@ const styles = StyleSheet.create({
     gap: 2,
     overflow: 'hidden',
   },
-  cardDefault: {
-    backgroundColor: '#ffffff',
-    borderColor: 'transparent',
-  },
-  cardSelected: {
-    backgroundColor: 'rgba(99, 102, 241, 0.08)',
-    borderColor: 'rgba(199, 210, 254, 0.6)',
-  },
-  cardPressed: {
-    opacity: 0.9,
-    backgroundColor: 'rgba(241, 245, 249, 0.6)',
-  },
   indicatorBar: {
     position: 'absolute',
     left: 0,
     top: 6,
     bottom: 6,
-    width: 2.5,
+    width: 3,
     borderTopLeftRadius: 4,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#4f46e5',
   },
   headerRow: {
     flexDirection: 'row',
@@ -87,19 +103,13 @@ const styles = StyleSheet.create({
   },
   nameText: {
     flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '500',
-    color: '#1e293b',
-  },
-  nameTextSelected: {
-    fontWeight: '600',
-    color: '#0f172a',
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: 'Open Sans',
   },
   fileNameText: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '400',
-    color: '#64748b',
+    fontSize: 11,
+    lineHeight: 15,
+    fontFamily: 'Open Sans',
   },
 })

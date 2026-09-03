@@ -2,22 +2,44 @@ import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import type { GalleryEntry } from '../types'
 import { Telescope } from 'lucide-react-native'
+import { useTheme } from '@/providers/theme-provider'
+import { AppThemesPreview } from './previews/AppThemesPreview'
 
 interface StagePreviewRendererProps {
   entry: GalleryEntry
 }
 
 export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
+  const { colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
+
+  // If the selected entry is App Theme & Colors, render the interactive Theme Settings!
+  if (
+    entry.id === 'app-themes-settings' ||
+    entry.name === 'App Theme & Colors' ||
+    entry.filePath.includes('themes-tab')
+  ) {
+    return <AppThemesPreview />
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.centerContent}>
-        <View style={styles.iconCircle}>
-          <Telescope size={64} color='#4f46e5' strokeWidth={1.6} />
+        <View
+          style={[
+            styles.iconCircle,
+            {
+              backgroundColor: isDark ? colors.card : colors.secondary,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <Telescope size={56} color={colors.primary} strokeWidth={1.6} />
         </View>
 
-        <Text style={styles.title}>Coming Soon!</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>Coming Soon!</Text>
 
-        <Text style={styles.description}>
+        <Text style={[styles.description, { color: colors.mutedForeground }]}>
           This page has not been created yet.{'\n'}
           Stay tuned though!
         </Text>
@@ -32,7 +54,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     minHeight: 480,
-    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
@@ -47,23 +68,19 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#f5f3ff',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#e0e7ff',
   },
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#0f172a',
     fontFamily: 'Open Sans',
     textAlign: 'center',
   },
   description: {
     fontSize: 15,
-    color: '#64748b',
     fontFamily: 'Open Sans',
     textAlign: 'center',
     lineHeight: 24,

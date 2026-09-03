@@ -32,6 +32,7 @@ import {
 } from 'lucide-react-native'
 import { useAuthStore } from '../../stores/auth-store'
 import { useAuth } from '../../providers/auth-provider'
+import { useTheme } from '../../providers/theme-provider'
 
 interface AppSidebarProps {
   isCollapsed?: boolean
@@ -48,6 +49,7 @@ export function AppSidebar({
   const pathname = usePathname()
   const { auth } = useAuthStore()
   const authContext = useAuth()
+  const { openThemeDrawer, colors, resolvedMode } = useTheme()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   const activeUser = authContext?.user || auth.user
@@ -164,46 +166,55 @@ export function AppSidebar({
   }
 
   return (
-    <View style={[styles.container, isCollapsed && styles.containerCollapsed]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.sidebar || colors.background,
+          borderRightColor: colors.sidebarBorder || colors.border,
+        },
+        isCollapsed && styles.containerCollapsed,
+      ]}
+    >
       {/* Team Switcher Header */}
-      <View style={[styles.header, isCollapsed && styles.headerCollapsed]}>
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: colors.sidebarBorder || colors.border },
+          isCollapsed && styles.headerCollapsed,
+        ]}
+      >
         <Pressable
           onPress={isCollapsed ? onToggleCollapse : undefined}
           style={[styles.teamBox, isCollapsed && styles.teamBoxCollapsed]}
           hitSlop={6}
           accessibilityRole='button'
-          accessibilityLabel='Expand Sidebar'
+          accessibilityLabel={isCollapsed ? 'Expand Sidebar' : 'Team Switcher'}
         >
-          <View style={styles.teamLogo}>
-            <Command size={18} color='#ffffff' strokeWidth={2.4} />
+          <View style={[styles.teamLogo, { backgroundColor: colors.primary }]}>
+            <Command
+              size={18}
+              color={colors.primaryForeground || '#ffffff'}
+              strokeWidth={2.4}
+            />
           </View>
           {!isCollapsed && (
             <View style={styles.teamInfo}>
-              <Text style={styles.teamName} numberOfLines={1}>
+              <Text
+                style={[styles.teamName, { color: colors.foreground }]}
+                numberOfLines={1}
+              >
                 Amoga App
               </Text>
-              <Text style={styles.teamPlan} numberOfLines={1}>
+              <Text
+                style={[styles.teamPlan, { color: colors.mutedForeground }]}
+                numberOfLines={1}
+              >
                 Demo Company
               </Text>
             </View>
           )}
         </Pressable>
-
-        {/* Collapse toggle button: visible ONLY when expanded */}
-        {!isCollapsed && onToggleCollapse && (
-          <Pressable
-            onPress={onToggleCollapse}
-            style={({ pressed }) => [
-              styles.toggleBtn,
-              pressed && styles.toggleBtnPressed,
-            ]}
-            accessibilityRole='button'
-            accessibilityLabel='Collapse Sidebar'
-            hitSlop={8}
-          >
-            <PanelLeftClose size={16} color='#64748b' strokeWidth={2} />
-          </Pressable>
-        )}
       </View>
 
       {/* Nav List */}
@@ -212,7 +223,56 @@ export function AppSidebar({
         contentContainerStyle={styles.navContent}
         showsVerticalScrollIndicator={false}
       >
-        {!isCollapsed && <Text style={styles.groupHeader}>MENU</Text>}
+        {/* Expanded: Menu label + Toggle button on the right */}
+        {!isCollapsed ? (
+          <View style={styles.menuHeaderRow}>
+            <Text
+              style={[styles.groupHeader, { color: colors.mutedForeground }]}
+            >
+              Menu
+            </Text>
+            {onToggleCollapse && (
+              <Pressable
+                onPress={onToggleCollapse}
+                style={({ pressed }) => [
+                  styles.toggleBtn,
+                  pressed && { backgroundColor: colors.secondary },
+                ]}
+                accessibilityRole='button'
+                accessibilityLabel='Collapse Sidebar'
+                hitSlop={8}
+              >
+                <PanelLeftClose
+                  size={16}
+                  color={colors.mutedForeground}
+                  strokeWidth={2}
+                />
+              </Pressable>
+            )}
+          </View>
+        ) : (
+          /* Collapsed: Toggle button aligned vertically with menu item icons */
+          onToggleCollapse && (
+            <Pressable
+              onPress={onToggleCollapse}
+              style={({ pressed }) => [
+                styles.navItem,
+                styles.navItemCollapsed,
+                pressed && { backgroundColor: colors.secondary },
+                { marginBottom: 6 },
+              ]}
+              accessibilityRole='button'
+              accessibilityLabel='Expand Sidebar'
+              hitSlop={8}
+            >
+              <PanelLeftClose
+                size={18}
+                color={colors.mutedForeground}
+                strokeWidth={2}
+              />
+            </Pressable>
+          )
+        )}
 
         {menuItems.map((item) => {
           const Icon = item.icon
@@ -232,8 +292,10 @@ export function AppSidebar({
               onPress={() => handlePress(item.url)}
               style={({ pressed }) => [
                 styles.navItem,
-                isActive && styles.navItemActive,
-                pressed && styles.navItemPressed,
+                isActive && {
+                  backgroundColor: colors.sidebarAccent || colors.secondary,
+                },
+                pressed && { opacity: 0.8 },
                 isCollapsed && styles.navItemCollapsed,
               ]}
               accessibilityRole='button'
@@ -241,7 +303,11 @@ export function AppSidebar({
             >
               <Icon
                 size={16}
-                color={isActive ? '#0f172a' : '#64748b'}
+                color={
+                  isActive
+                    ? colors.primary || colors.foreground
+                    : colors.mutedForeground
+                }
                 strokeWidth={2}
               />
               {!isCollapsed && (
@@ -249,15 +315,35 @@ export function AppSidebar({
                   <Text
                     style={[
                       styles.navItemText,
-                      isActive && styles.navItemTextActive,
+                      {
+                        color: isActive
+                          ? colors.primary || colors.foreground
+                          : colors.mutedForeground,
+                        fontWeight: isActive ? '600' : '400',
+                      },
                     ]}
                     numberOfLines={1}
                   >
                     {item.title}
                   </Text>
                   {item.comingSoon && (
-                    <View style={styles.soonBadge}>
-                      <Text style={styles.soonBadgeText}>Soon</Text>
+                    <View
+                      style={[
+                        styles.soonBadge,
+                        {
+                          backgroundColor: colors.secondary,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.soonBadgeText,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        Soon
+                      </Text>
                     </View>
                   )}
                 </>
@@ -267,7 +353,14 @@ export function AppSidebar({
         })}
 
         {!isCollapsed && (
-          <Text style={[styles.groupHeader, { marginTop: 18 }]}>OTHER</Text>
+          <Text
+            style={[
+              styles.groupHeader,
+              { color: colors.mutedForeground, marginTop: 18 },
+            ]}
+          >
+            OTHER
+          </Text>
         )}
 
         {otherItems.map((item) => {
@@ -279,14 +372,20 @@ export function AppSidebar({
               onPress={() => handlePress(item.url)}
               style={({ pressed }) => [
                 styles.navItem,
-                isActive && styles.navItemActive,
-                pressed && styles.navItemPressed,
+                isActive && {
+                  backgroundColor: colors.sidebarAccent || colors.secondary,
+                },
+                pressed && { opacity: 0.8 },
                 isCollapsed && styles.navItemCollapsed,
               ]}
             >
               <Icon
                 size={16}
-                color={isActive ? '#0f172a' : '#64748b'}
+                color={
+                  isActive
+                    ? colors.primary || colors.foreground
+                    : colors.mutedForeground
+                }
                 strokeWidth={2}
               />
               {!isCollapsed && (
@@ -294,15 +393,35 @@ export function AppSidebar({
                   <Text
                     style={[
                       styles.navItemText,
-                      isActive && styles.navItemTextActive,
+                      {
+                        color: isActive
+                          ? colors.primary || colors.foreground
+                          : colors.mutedForeground,
+                        fontWeight: isActive ? '600' : '400',
+                      },
                     ]}
                     numberOfLines={1}
                   >
                     {item.title}
                   </Text>
                   {item.comingSoon && (
-                    <View style={styles.soonBadge}>
-                      <Text style={styles.soonBadgeText}>Soon</Text>
+                    <View
+                      style={[
+                        styles.soonBadge,
+                        {
+                          backgroundColor: colors.secondary,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.soonBadgeText,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        Soon
+                      </Text>
                     </View>
                   )}
                 </>
@@ -313,38 +432,60 @@ export function AppSidebar({
       </ScrollView>
 
       {/* NavUser Footer */}
-      <View style={[styles.footer, isCollapsed && styles.footerCollapsed]}>
+      <View
+        style={[
+          styles.footer,
+          { borderTopColor: colors.sidebarBorder || colors.border },
+          isCollapsed && styles.footerCollapsed,
+        ]}
+      >
         <Pressable
           onPress={() => setIsUserMenuOpen(true)}
           style={({ pressed }) => [
             styles.userBox,
             isCollapsed && styles.userBoxCollapsed,
-            pressed && styles.userBoxPressed,
+            pressed && { backgroundColor: colors.secondary },
           ]}
           hitSlop={6}
           accessibilityRole='button'
           accessibilityLabel='User Account Menu'
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{userInitials}</Text>
+          <View
+            style={[
+              styles.avatar,
+              {
+                backgroundColor: colors.secondary,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.avatarText, { color: colors.foreground }]}>
+              {userInitials}
+            </Text>
           </View>
           {!isCollapsed && (
             <>
               <View style={styles.userInfo}>
-                <Text style={styles.userName} numberOfLines={1}>
+                <Text
+                  style={[styles.userName, { color: colors.foreground }]}
+                  numberOfLines={1}
+                >
                   {userName}
                 </Text>
-                <Text style={styles.userEmail} numberOfLines={1}>
+                <Text
+                  style={[styles.userEmail, { color: colors.mutedForeground }]}
+                  numberOfLines={1}
+                >
                   {userEmail}
                 </Text>
               </View>
-              <ChevronsUpDown size={14} color='#94a3b8' />
+              <ChevronsUpDown size={14} color={colors.mutedForeground} />
             </>
           )}
         </Pressable>
       </View>
 
-      {/* USER DROPDOWN MODAL (1:1 with Next.js Screenshot 3) */}
+      {/* USER DROPDOWN MODAL */}
       <Modal
         visible={isUserMenuOpen}
         transparent
@@ -358,136 +499,193 @@ export function AppSidebar({
           <Pressable
             style={[
               styles.dropdownCard,
-              { left: isCollapsed ? 70 : 16, bottom: 20 },
+              {
+                backgroundColor: colors.card || colors.background,
+                borderColor: colors.border,
+                left: isCollapsed ? 70 : 16,
+                bottom: 20,
+              },
             ]}
             onPress={(e) => e.stopPropagation()}
           >
             {/* Header: Avatar + Name + Email */}
             <View style={styles.dropdownHeader}>
-              <View style={styles.dropdownAvatar}>
-                <Text style={styles.dropdownAvatarText}>{userInitials}</Text>
+              <View
+                style={[
+                  styles.dropdownAvatar,
+                  {
+                    backgroundColor: colors.secondary,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dropdownAvatarText,
+                    { color: colors.foreground },
+                  ]}
+                >
+                  {userInitials}
+                </Text>
               </View>
               <View style={styles.dropdownUserInfo}>
-                <Text style={styles.dropdownUserName} numberOfLines={1}>
+                <Text
+                  style={[
+                    styles.dropdownUserName,
+                    { color: colors.foreground },
+                  ]}
+                  numberOfLines={1}
+                >
                   {userName}
                 </Text>
-                <Text style={styles.dropdownUserEmail} numberOfLines={1}>
+                <Text
+                  style={[
+                    styles.dropdownUserEmail,
+                    { color: colors.mutedForeground },
+                  ]}
+                  numberOfLines={1}
+                >
                   {userEmail}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.menuDivider} />
+            <View
+              style={[styles.menuDivider, { backgroundColor: colors.border }]}
+            />
 
             {/* Section 1 */}
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={() => {
                 setIsUserMenuOpen(false)
                 router.push('/app-settings' as any)
               }}
             >
-              <User size={15} color='#475569' />
-              <Text style={styles.menuItemText}>My Profile</Text>
+              <User size={15} color={colors.mutedForeground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                My Profile
+              </Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={() => {
                 setIsUserMenuOpen(false)
                 router.push('/message' as any)
               }}
             >
-              <Bell size={15} color='#475569' />
-              <Text style={styles.menuItemText}>Notifications</Text>
+              <Bell size={15} color={colors.mutedForeground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                Notifications
+              </Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={() => {
                 setIsUserMenuOpen(false)
                 router.push('/help-center' as any)
               }}
             >
-              <MessageCircle size={15} color='#475569' />
-              <Text style={styles.menuItemText}>Help & Support</Text>
+              <MessageCircle size={15} color={colors.mutedForeground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                Help & Support
+              </Text>
             </Pressable>
 
-            <View style={styles.menuDivider} />
+            <View
+              style={[styles.menuDivider, { backgroundColor: colors.border }]}
+            />
 
             {/* Section 2 */}
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={() => {
                 setIsUserMenuOpen(false)
                 router.push('/vouchers' as any)
               }}
             >
-              <CreditCard size={15} color='#475569' />
-              <Text style={styles.menuItemText}>Subscriptions</Text>
+              <CreditCard size={15} color={colors.mutedForeground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                Subscriptions
+              </Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={() => {
                 setIsUserMenuOpen(false)
                 router.push('/link-maker' as any)
               }}
             >
-              <ShoppingBag size={15} color='#475569' />
-              <Text style={styles.menuItemText}>Buy Apps</Text>
+              <ShoppingBag size={15} color={colors.mutedForeground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                Buy Apps
+              </Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
+              ]}
+              onPress={() => {
+                setIsUserMenuOpen(false)
+                openThemeDrawer()
+              }}
+            >
+              <Palette size={15} color={colors.primary} />
+              <Text
+                style={[
+                  styles.menuItemText,
+                  { color: colors.foreground, fontWeight: '600' },
+                ]}
+              >
+                Theme Settings
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.menuItem,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={() => {
                 setIsUserMenuOpen(false)
                 router.push('/app-settings' as any)
               }}
             >
-              <Palette size={15} color='#475569' />
-              <Text style={styles.menuItemText}>Theme Settings</Text>
+              <Settings size={15} color={colors.mutedForeground} />
+              <Text style={[styles.menuItemText, { color: colors.foreground }]}>
+                Settings
+              </Text>
             </Pressable>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.menuItem,
-                pressed && styles.menuItemPressed,
-              ]}
-              onPress={() => {
-                setIsUserMenuOpen(false)
-                router.push('/app-settings' as any)
-              }}
-            >
-              <Settings size={15} color='#475569' />
-              <Text style={styles.menuItemText}>Settings</Text>
-            </Pressable>
-
-            <View style={styles.menuDivider} />
+            <View
+              style={[styles.menuDivider, { backgroundColor: colors.border }]}
+            />
 
             {/* Section 3: Sign Out */}
             <Pressable
               style={({ pressed }) => [
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressed && { backgroundColor: colors.secondary },
               ]}
               onPress={handleSignOut}
             >
@@ -581,14 +779,18 @@ const styles = StyleSheet.create({
     padding: 8,
     gap: 2,
   },
+  menuHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    marginTop: 4,
+    marginBottom: 4,
+  },
   groupHeader: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#94a3b8',
     letterSpacing: 0.8,
-    marginBottom: 4,
-    marginLeft: 8,
-    marginTop: 6,
     fontFamily: 'Open Sans',
   },
   navItem: {

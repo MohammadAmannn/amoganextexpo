@@ -6,6 +6,7 @@ import {
   View,
 } from 'react-native'
 import { Search, X } from 'lucide-react-native'
+import { useTheme } from '@/providers/theme-provider'
 
 interface DesignSystemSearchProps {
   value: string
@@ -20,17 +21,41 @@ export function DesignSystemSearch({
   onClear,
   inputRef,
 }: DesignSystemSearchProps) {
+  const { colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
+
   return (
-    <View style={styles.container}>
-      <View style={styles.inputWrapper}>
-        <Search size={14} color='#94a3b8' strokeWidth={2} style={styles.searchIcon} />
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+          borderBottomColor: colors.border,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            backgroundColor: isDark ? colors.card : colors.background,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Search
+          size={14}
+          color={colors.mutedForeground}
+          strokeWidth={2}
+          style={styles.searchIcon}
+        />
         <TextInput
           ref={inputRef as any}
           value={value}
           onChangeText={onChangeText}
           placeholder='Search components, files...'
-          placeholderTextColor='#94a3b8'
-          style={styles.input}
+          placeholderTextColor={colors.mutedForeground}
+          style={[styles.input, { color: colors.foreground }]}
           autoCapitalize='none'
           autoCorrect={false}
           clearButtonMode='never'
@@ -43,7 +68,7 @@ export function DesignSystemSearch({
             accessibilityRole='button'
             accessibilityLabel='Clear search'
           >
-            <X size={13} color='#64748b' strokeWidth={2.2} />
+            <X size={13} color={colors.mutedForeground} strokeWidth={2.2} />
           </Pressable>
         )}
       </View>
@@ -55,15 +80,11 @@ const styles = StyleSheet.create({
   container: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
-    backgroundColor: '#ffffff',
   },
   inputWrapper: {
     height: 36,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
@@ -74,8 +95,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: '100%',
-    fontSize: 14,
-    color: '#0f172a',
+    fontSize: 13,
+    fontFamily: 'Open Sans',
     padding: 0,
   },
   clearButton: {

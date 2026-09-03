@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { DesignSystemCard } from './DesignSystemCard'
 import type { GalleryEntry } from '../types'
+import { useTheme } from '@/providers/theme-provider'
 
 interface DesignSystemListProps {
   entries: GalleryEntry[]
@@ -25,6 +26,9 @@ export function DesignSystemList({
   onSelectEntry,
   onClearSearch,
 }: DesignSystemListProps) {
+  const { colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
+
   const renderItem = ({ item }: { item: GalleryEntry }) => (
     <DesignSystemCard
       entry={item}
@@ -35,18 +39,34 @@ export function DesignSystemList({
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>
+      <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
         No components matching "{searchQuery}"
       </Text>
-      <Pressable onPress={onClearSearch} hitSlop={8} style={styles.clearSearchButton}>
-        <Text style={styles.clearSearchText}>Clear search</Text>
+      <Pressable
+        onPress={onClearSearch}
+        hitSlop={8}
+        style={styles.clearSearchButton}
+      >
+        <Text style={[styles.clearSearchText, { color: colors.primary }]}>
+          Clear search
+        </Text>
       </Pressable>
     </View>
   )
 
   const renderFooter = () => (
-    <View style={styles.footerContainer}>
-      <Text style={styles.footerText}>shadcn/ui • TailwindCSS • React 19</Text>
+    <View
+      style={[
+        styles.footerContainer,
+        {
+          borderTopColor: colors.border,
+          backgroundColor: isDark ? colors.card : colors.secondary,
+        },
+      ]}
+    >
+      <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
+        shadcn/ui • TailwindCSS • React 19
+      </Text>
     </View>
   )
 
@@ -57,7 +77,10 @@ export function DesignSystemList({
       renderItem={renderItem}
       ListEmptyComponent={renderEmpty}
       ListFooterComponent={entries.length > 0 ? renderFooter : null}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[
+        styles.listContent,
+        { backgroundColor: colors.background },
+      ]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps='handled'
       initialNumToRender={15}
@@ -80,7 +103,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 12,
-    color: '#64748b',
+    fontFamily: 'Open Sans',
     textAlign: 'center',
   },
   clearSearchButton: {
@@ -89,15 +112,13 @@ const styles = StyleSheet.create({
   },
   clearSearchText: {
     fontSize: 12,
-    color: '#059669',
+    fontFamily: 'Open Sans',
     textDecorationLine: 'underline',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   footerContainer: {
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(226, 232, 240, 0.8)',
-    backgroundColor: 'rgba(248, 250, 252, 0.5)',
     paddingVertical: 8,
     paddingHorizontal: 12,
     alignItems: 'center',
@@ -106,7 +127,6 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 10,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: '#64748b',
     textAlign: 'center',
   },
 })

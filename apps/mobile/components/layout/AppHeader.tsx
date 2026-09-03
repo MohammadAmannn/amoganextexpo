@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { Menu, Search, Bell } from 'lucide-react-native'
 import { useNotificationStore } from '../../stores/notification-store'
 import { useRouter } from 'expo-router'
+import { useTheme } from '@/providers/theme-provider'
 
 interface AppHeaderProps {
   title: string
@@ -25,9 +26,19 @@ export function AppHeader({
 }: AppHeaderProps) {
   const router = useRouter()
   const { unreadCount } = useNotificationStore()
+  const { colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
 
   return (
-    <View style={styles.header}>
+    <View
+      style={[
+        styles.header,
+        {
+          backgroundColor: colors.background,
+          borderBottomColor: colors.border,
+        },
+      ]}
+    >
       <View style={styles.leftGroup}>
         {/* On mobile, show the drawer hamburger trigger */}
         {!isDesktop && (
@@ -35,17 +46,20 @@ export function AppHeader({
             onPress={onOpenMobileDrawer}
             style={({ pressed }) => [
               styles.iconBtn,
-              pressed && styles.iconBtnPressed,
+              { backgroundColor: pressed ? colors.secondary : 'transparent' },
             ]}
             accessibilityRole='button'
             accessibilityLabel='Open Navigation Menu'
             hitSlop={8}
           >
-            <Menu size={20} color='#0f172a' strokeWidth={2.2} />
+            <Menu size={20} color={colors.foreground} strokeWidth={2.2} />
           </Pressable>
         )}
 
-        <Text style={styles.title} numberOfLines={1}>
+        <Text
+          style={[styles.title, { color: colors.foreground }]}
+          numberOfLines={1}
+        >
           {title}
         </Text>
       </View>
@@ -57,28 +71,33 @@ export function AppHeader({
           onPress={onSearchPress}
           style={({ pressed }) => [
             styles.iconBtn,
-            pressed && styles.iconBtnPressed,
+            { backgroundColor: pressed ? colors.secondary : 'transparent' },
           ]}
           accessibilityRole='button'
           accessibilityLabel='Search'
           hitSlop={8}
         >
-          <Search size={18} color='#64748b' strokeWidth={2} />
+          <Search size={18} color={colors.mutedForeground} strokeWidth={2} />
         </Pressable>
 
         <Pressable
           onPress={() => router.push('/message' as any)}
           style={({ pressed }) => [
             styles.iconBtn,
-            pressed && styles.iconBtnPressed,
+            { backgroundColor: pressed ? colors.secondary : 'transparent' },
           ]}
           accessibilityRole='button'
           accessibilityLabel='Notifications'
           hitSlop={8}
         >
-          <Bell size={18} color='#64748b' strokeWidth={2} />
+          <Bell size={18} color={colors.mutedForeground} strokeWidth={2} />
           {unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
+            <View
+              style={[
+                styles.unreadBadge,
+                { backgroundColor: colors.destructive || '#ef4444' },
+              ]}
+            >
               <Text style={styles.unreadBadgeText}>
                 {unreadCount > 5 ? '5+' : unreadCount}
               </Text>
@@ -93,9 +112,7 @@ export function AppHeader({
 const styles = StyleSheet.create({
   header: {
     height: 56,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -110,7 +127,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
     fontFamily: 'Open Sans',
   },
   rightGroup: {
@@ -125,14 +141,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconBtnPressed: {
-    backgroundColor: '#f1f5f9',
-  },
   unreadBadge: {
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: '#ef4444',
     minWidth: 16,
     height: 16,
     borderRadius: 8,
@@ -144,5 +156,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 9,
     fontWeight: '700',
+    fontFamily: 'Open Sans',
   },
 })

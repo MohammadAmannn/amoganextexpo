@@ -10,6 +10,7 @@ import {
 import { LayoutGrid } from 'lucide-react-native'
 import { CATEGORY_CONFIG, GALLERY_CATEGORIES } from '../data/categories'
 import type { GalleryCategory } from '../types'
+import { useTheme } from '@/providers/theme-provider'
 
 interface CategoryFilterProps {
   activeCategory: GalleryCategory
@@ -22,8 +23,19 @@ export function CategoryFilter({
   categoryCounts,
   onSelectCategory,
 }: CategoryFilterProps) {
+  const { colors, resolvedMode } = useTheme()
+  const isDark = resolvedMode === 'dark'
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: isDark ? colors.card : colors.secondary,
+          borderBottomColor: colors.border,
+        },
+      ]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -39,16 +51,6 @@ export function CategoryFilter({
             const config = CATEGORY_CONFIG[cat]
             const IconComponent = config?.icon || LayoutGrid
 
-            const activeBg = config?.activeBg || 'rgba(16, 185, 129, 0.15)'
-            const activeText = config?.activeText || '#059669'
-            const activeBorder = config?.activeBorder || 'rgba(16, 185, 129, 0.35)'
-            const badgeBg = isActive
-              ? config?.badgeActiveBg || 'rgba(16, 185, 129, 0.25)'
-              : '#f1f5f9'
-            const badgeText = isActive
-              ? config?.badgeActiveText || '#047857'
-              : '#64748b'
-
             return (
               <Pressable
                 key={cat}
@@ -57,10 +59,13 @@ export function CategoryFilter({
                   styles.chip,
                   isActive
                     ? {
-                        backgroundColor: activeBg,
-                        borderColor: activeBorder,
+                        backgroundColor: colors.primary,
+                        borderColor: colors.primary,
                       }
-                    : styles.chipInactive,
+                    : {
+                        backgroundColor: isDark ? colors.background : '#ffffff',
+                        borderColor: colors.border,
+                      },
                   pressed && styles.chipPressed,
                 ]}
                 accessibilityRole='button'
@@ -68,22 +73,48 @@ export function CategoryFilter({
               >
                 <IconComponent
                   size={14}
-                  color={isActive ? activeText : '#64748b'}
+                  color={
+                    isActive
+                      ? colors.primaryForeground || '#ffffff'
+                      : colors.mutedForeground
+                  }
                   strokeWidth={isActive ? 2.2 : 2}
                 />
                 <Text
                   style={[
                     styles.chipLabel,
                     {
-                      color: isActive ? activeText : '#64748b',
-                      fontWeight: isActive ? '600' : '500',
+                      color: isActive
+                        ? colors.primaryForeground || '#ffffff'
+                        : colors.foreground,
+                      fontWeight: isActive ? '700' : '500',
                     },
                   ]}
                 >
                   {cat}
                 </Text>
-                <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-                  <Text style={[styles.badgeText, { color: badgeText }]}>
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      backgroundColor: isActive
+                        ? 'rgba(255, 255, 255, 0.25)'
+                        : isDark
+                        ? colors.secondary
+                        : '#f1f5f9',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      {
+                        color: isActive
+                          ? colors.primaryForeground || '#ffffff'
+                          : colors.mutedForeground,
+                      },
+                    ]}
+                  >
                     {count}
                   </Text>
                 </View>
@@ -100,8 +131,6 @@ const styles = StyleSheet.create({
   container: {
     maxHeight: 130,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
-    backgroundColor: 'rgba(248, 250, 252, 0.6)',
   },
   scrollView: {
     maxHeight: 130,
@@ -124,16 +153,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
-  chipInactive: {
-    backgroundColor: '#ffffff',
-    borderColor: 'rgba(226, 232, 240, 0.8)',
-  },
   chipPressed: {
     opacity: 0.85,
     transform: [{ scale: 0.98 }],
   },
   chipLabel: {
     fontSize: 12,
+    fontFamily: 'Open Sans',
     lineHeight: 16,
   },
   badge: {
@@ -146,7 +172,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: '600',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontFamily: 'Open Sans',
     lineHeight: 12,
   },
 })
