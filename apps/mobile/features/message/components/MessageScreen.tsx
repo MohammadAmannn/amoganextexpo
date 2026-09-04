@@ -14,6 +14,7 @@ import { EmailSearchBar } from './EmailSearchBar'
 import { EmailCardItem } from './EmailCardItem'
 import { EmailView } from './EmailView'
 import { NewEmailModal } from './NewEmailModal'
+import { MessageChatSection } from './MessageChatSection'
 import { MessageChatView } from './MessageChatView'
 import { FileManagerView } from './FileManagerView'
 import { initialEmails, Email } from '../data/mock-emails'
@@ -80,17 +81,6 @@ export function MessageScreen() {
 
   const listPane = (
     <View style={styles.listContainer}>
-      {/* Category Icons Toolbar */}
-      <CategoryToolbar
-        categoryFilter={categoryFilter}
-        onSelectTasks={() => router.push('/charttemplate')}
-        onSelectMail={() => setCategoryFilter('mail')}
-        onSelectChat={() => router.push('/chattemplate')}
-        onSelectAi={() => router.push('/ai-chat')}
-        onSelectAiAssistant={() => router.push('/ai-chat')}
-        onSelectVouchers={() => router.push('/vouchers')}
-      />
-
       {/* Sub Tabs Bar (Inbox, Sent, Folder, Contact, Groups) */}
       <SubTabsBar
         activeTab={activeSubTab}
@@ -156,7 +146,22 @@ export function MessageScreen() {
       }
     >
       <View style={styles.container}>
-        {isDesktop ? (
+        {/* Category Icons Toolbar */}
+        <CategoryToolbar
+          categoryFilter={categoryFilter}
+          onSelectTasks={() => router.push('/charttemplate')}
+          onSelectMail={() => setCategoryFilter('mail')}
+          onSelectChat={() => setCategoryFilter('chat')}
+          onSelectAi={() => router.push('/ai-chat')}
+          onSelectAiAssistant={() => router.push('/ai-chat')}
+          onSelectVouchers={() => router.push('/vouchers')}
+        />
+
+        {categoryFilter === 'chat' ? (
+          <View style={styles.chatSectionContainer}>
+            <MessageChatSection />
+          </View>
+        ) : isDesktop ? (
           <View style={styles.desktopSplit}>
             <View style={styles.desktopSidebarPane}>{listPane}</View>
             <View style={styles.desktopDetailPane}>{detailPane}</View>
@@ -185,6 +190,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  chatSectionContainer: {
+    flex: 1,
+    marginTop: 6,
   },
   headerRightActions: {
     flexDirection: 'row',

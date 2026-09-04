@@ -1,11 +1,11 @@
 import React from 'react'
-import { ComingSoon } from '@/components/ComingSoon'
+import { UniversalLayout } from '@/components/layout'
+import { MessageChatSection } from '@/features/message'
 
 export default function ChatTemplateRoute() {
   return (
-    <ComingSoon
-      title='Chat Template'
-      description='Realtime team chat and contact messaging are coming soon.'
-    />
+    <UniversalLayout title='Chat'>
+      <MessageChatSection />
+    </UniversalLayout>
   )
 }

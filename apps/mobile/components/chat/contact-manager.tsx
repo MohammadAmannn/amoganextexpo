@@ -28,6 +28,7 @@ export interface ContactItem {
   initials?: string
   isEnabled?: boolean
   mobile?: string
+  contactUserId?: string
 }
 
 export interface ContactManagerProps {

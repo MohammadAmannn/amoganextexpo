@@ -436,7 +436,7 @@ export function ChatPreviews({ entry }: ChatPreviewsProps) {
                 ownerEmail: 'itsaman00786@gmail.com',
                 membersCount: 3,
                 isEnabled: true,
-                description: newG.description,
+                description: newG.description || 'General discussions',
               },
             ])
           }}

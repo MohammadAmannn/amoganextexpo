@@ -4,6 +4,7 @@ import type { GalleryEntry } from '../types'
 import { Telescope } from 'lucide-react-native'
 import { useTheme } from '@/providers/theme-provider'
 import { AppThemesPreview } from './previews/AppThemesPreview'
+import { LucideIconsPreview } from './previews/LucideIconsPreview'
 import { PrimitivesShowcase } from './previews/PrimitivesShowcase'
 import { DatePickerPreviews } from './previews/DatePickerPreviews'
 import { CalendarPreviews } from './previews/CalendarPreviews'
@@ -12,6 +13,7 @@ import { WizardPreviews } from './previews/WizardPreviews'
 import { FilesPreviews } from './previews/FilesPreviews'
 import { ChatPreviews } from './previews/ChatPreviews'
 import { NotificationPreviews } from './previews/NotificationPreviews'
+import { MapPreviews } from './previews/MapPreviews'
 
 interface StagePreviewRendererProps {
   entry: GalleryEntry
@@ -21,7 +23,16 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
   const { colors, resolvedMode } = useTheme()
   const isDark = resolvedMode === 'dark'
 
-  // 1. Theme preview
+  // 1. Icons gallery preview
+  if (
+    entry.id === 'lucide-icons-gallery' ||
+    entry.name.toLowerCase().includes('icon') ||
+    entry.filePath.includes('LucideIconsPreview')
+  ) {
+    return <LucideIconsPreview />
+  }
+
+  // 2. Theme preview
   if (
     entry.category === 'Theme' ||
     entry.id === 'app-themes-settings' ||
@@ -31,7 +42,17 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <AppThemesPreview />
   }
 
-  // 2. Date Picker preview
+  // 3. Maps preview
+  if (
+    entry.category === 'Maps' ||
+    entry.id === 'complete-map-template' ||
+    entry.name.toLowerCase().includes('map') ||
+    entry.filePath.includes('map')
+  ) {
+    return <MapPreviews entry={entry} />
+  }
+
+  // 4. Date Picker preview
   if (
     entry.category === 'Date Picker' ||
     entry.id.startsWith('date-picker-') ||
@@ -40,7 +61,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <DatePickerPreviews entry={entry} />
   }
 
-  // 3. Calendar preview
+  // 5. Calendar preview
   if (
     entry.category === 'Calendar' ||
     entry.id.startsWith('calendar-') ||
@@ -49,7 +70,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <CalendarPreviews entry={entry} />
   }
 
-  // 4. Data Cards preview
+  // 6. Data Cards preview
   if (
     entry.category === 'Data Cards' ||
     entry.id.startsWith('card-') ||
@@ -59,7 +80,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <DataCardsPreviews entry={entry} />
   }
 
-  // 5. Wizards preview
+  // 7. Wizards preview
   if (
     entry.category === 'Wizards' ||
     entry.id.includes('wizard') ||
@@ -68,7 +89,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <WizardPreviews entry={entry} />
   }
 
-  // 6. Files preview
+  // 8. Files preview
   if (
     entry.category === 'Files' ||
     entry.id.startsWith('file-') ||
@@ -78,7 +99,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <FilesPreviews entry={entry} />
   }
 
-  // 7. Chat preview
+  // 9. Chat preview
   if (
     entry.category === 'Chat' ||
     entry.id.startsWith('chat-') ||
@@ -91,7 +112,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <ChatPreviews entry={entry} />
   }
 
-  // 8. Notifications preview
+  // 10. Notifications preview
   if (
     entry.category === 'Notifications' ||
     entry.id.includes('notification') ||
@@ -100,7 +121,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <NotificationPreviews entry={entry} />
   }
 
-  // 9. Primitives showcase
+  // 11. Primitives showcase
   if (
     entry.category === 'Primitives' ||
     entry.id.startsWith('primitive-') ||
