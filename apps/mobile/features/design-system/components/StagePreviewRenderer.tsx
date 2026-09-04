@@ -11,6 +11,7 @@ import { DataCardsPreviews } from './previews/DataCardsPreviews'
 import { WizardPreviews } from './previews/WizardPreviews'
 import { FilesPreviews } from './previews/FilesPreviews'
 import { ChatPreviews } from './previews/ChatPreviews'
+import { NotificationPreviews } from './previews/NotificationPreviews'
 
 interface StagePreviewRendererProps {
   entry: GalleryEntry
@@ -90,7 +91,16 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <ChatPreviews entry={entry} />
   }
 
-  // 8. Primitives showcase
+  // 8. Notifications preview
+  if (
+    entry.category === 'Notifications' ||
+    entry.id.includes('notification') ||
+    entry.filePath.includes('notification')
+  ) {
+    return <NotificationPreviews entry={entry} />
+  }
+
+  // 9. Primitives showcase
   if (
     entry.category === 'Primitives' ||
     entry.id.startsWith('primitive-') ||
