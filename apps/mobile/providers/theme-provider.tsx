@@ -10,125 +10,19 @@ import { Platform, useColorScheme, View } from 'react-native'
 import {
   colorThemes,
   findTheme,
+  getResolvedThemeColors,
   type ColorThemeDefinition,
+  type ThemeColors,
 } from '@amoga/theme'
 import { universalStorage } from '@/lib/storage'
 
 export type AppearanceMode = 'system' | 'light' | 'dark'
-
-export interface ThemeColors {
-  background: string
-  foreground: string
-  card: string
-  cardForeground: string
-  popover: string
-  popoverForeground: string
-  primary: string
-  primaryForeground: string
-  secondary: string
-  secondaryForeground: string
-  muted: string
-  mutedForeground: string
-  accent: string
-  accentForeground: string
-  destructive: string
-  destructiveForeground: string
-  border: string
-  input: string
-  ring: string
-  sidebar: string
-  sidebarForeground: string
-  sidebarPrimary: string
-  sidebarPrimaryForeground: string
-  sidebarAccent: string
-  sidebarAccentForeground: string
-  sidebarBorder: string
-  sidebarRing: string
-  chart1: string
-  chart2: string
-  chart3: string
-  chart4: string
-  chart5: string
-}
+export type { ThemeColors }
 
 const THEME_NAME_KEY = 'amoga_color_theme'
 const THEME_MODE_KEY = 'amoga_theme_mode'
 export const DEFAULT_COLOR_THEME = 'zinc'
 export const DEFAULT_APPEARANCE_MODE: AppearanceMode = 'light'
-
-// Safe self-contained helper to extract theme colors
-export function getResolvedThemeColors(
-  theme: ColorThemeDefinition | undefined,
-  mode: 'light' | 'dark'
-): ThemeColors {
-  const isDark = mode === 'dark'
-  const currentTheme = theme || colorThemes[0]
-  
-  // Clean valid hex primary color
-  let primaryHex = currentTheme?.preview || (isDark ? '#a855f7' : '#7c3aed')
-  if (!primaryHex.startsWith('#')) {
-    primaryHex = currentTheme?.colors?.[0] || (isDark ? '#a855f7' : '#18181b')
-  }
-
-  // Zinc theme primary in light mode is dark slate #18181b, in dark mode #fafafa
-  if (currentTheme?.name === 'zinc') {
-    primaryHex = isDark ? '#fafafa' : '#18181b'
-  }
-
-  const bg = isDark ? '#09090b' : '#ffffff'
-  const fg = isDark ? '#fafafa' : '#09090b'
-  const card = isDark ? '#18181b' : '#ffffff'
-  const cardFg = fg
-  const primary = primaryHex
-  // Contrast foreground for primary elements (e.g. badges, logo box)
-  const primaryFg = (primaryHex === '#fafafa' || primaryHex === '#ffffff') ? '#09090b' : '#ffffff'
-  const secondary = isDark ? '#27272a' : '#f4f4f5'
-  const secondaryFg = fg
-  const muted = isDark ? '#27272a' : '#f4f4f5'
-  const mutedFg = isDark ? '#a1a1aa' : '#71717a'
-  const accent = isDark ? '#27272a' : '#f4f4f5'
-  const accentFg = fg
-  const destructive = '#ef4444'
-  const destructiveFg = '#ffffff'
-  const border = isDark ? '#27272a' : '#e4e4e7'
-  const input = border
-  const ring = primary
-
-  return {
-    background: bg,
-    foreground: fg,
-    card,
-    cardForeground: cardFg,
-    popover: card,
-    popoverForeground: cardFg,
-    primary,
-    primaryForeground: primaryFg,
-    secondary,
-    secondaryForeground: secondaryFg,
-    muted,
-    mutedForeground: mutedFg,
-    accent,
-    accentForeground: accentFg,
-    destructive,
-    destructiveForeground: destructiveFg,
-    border,
-    input,
-    ring,
-    sidebar: isDark ? '#09090b' : '#ffffff',
-    sidebarForeground: fg,
-    sidebarPrimary: primary,
-    sidebarPrimaryForeground: primaryFg,
-    sidebarAccent: secondary,
-    sidebarAccentForeground: fg,
-    sidebarBorder: border,
-    sidebarRing: ring,
-    chart1: currentTheme?.colors?.[0] || '#4f46e5',
-    chart2: currentTheme?.colors?.[1] || '#06b6d4',
-    chart3: currentTheme?.colors?.[2] || '#10b981',
-    chart4: currentTheme?.colors?.[3] || '#f59e0b',
-    chart5: currentTheme?.colors?.[4] || '#ef4444',
-  }
-}
 
 interface ThemeContextType {
   themeName: string
@@ -214,6 +108,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.remove('dark')
       }
 
+      root.style.backgroundColor = colors.background
+      root.style.color = colors.foreground
+      if (document.body) {
+        document.body.style.backgroundColor = colors.background
+        document.body.style.color = colors.foreground
+      }
+
+      // Set explicit hex variables for custom styled elements
+      root.style.setProperty('--color-background', colors.background)
+      root.style.setProperty('--color-foreground', colors.foreground)
+      root.style.setProperty('--color-card', colors.card)
+      root.style.setProperty('--color-border', colors.border)
+      root.style.setProperty('--color-primary', colors.primary)
+      root.style.setProperty('--color-muted', colors.muted)
+
       if (currentTheme?.tokens) {
         const rawTokens =
           resolvedMode === 'dark'
@@ -225,7 +134,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [currentTheme, resolvedMode])
+  }, [currentTheme, resolvedMode, colors])
 
   const contextValue = useMemo(
     () => ({

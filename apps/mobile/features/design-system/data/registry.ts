@@ -58,6 +58,14 @@ export const galleryRegistry: GalleryEntry[] = [
     "filePath": "src/features/Message/components/files/file-upload-form.tsx"
   },
   {
+    "id": "file-uploader-viewer",
+    "name": "File Attachment & Document Viewer",
+    "category": "Files",
+    "badge": "Doc Viewer",
+    "description": "Full-featured drag & drop document attachment uploader and inline document reader supporting CSV, DOCX, XLSX, PDF, PNG, and ZIP with download and JSON export.",
+    "filePath": "src/features/MessageComponentGallery/previews/FileUploaderAndViewerPreview.tsx"
+  },
+  {
     "id": "folder-tree-item",
     "name": "Folder Tree Navigation",
     "category": "Files",
@@ -159,6 +167,14 @@ export const galleryRegistry: GalleryEntry[] = [
     "category": "Data Cards",
     "badge": "Statistics",
     "description": "Revenue & Metric statistics card featuring primary metric value ($128,450.00), growth percentage badge (+18.4%), mini sparkline visualization, and target achievement ratio.",
+    "filePath": "src/features/MessageComponentGallery/previews/DataCardsPreview.tsx"
+  },
+  {
+    "id": "data-cards-overview",
+    "name": "Data Cards Suite (Overview)",
+    "category": "Data Cards",
+    "badge": "Full Suite",
+    "description": "Complete collection of application data cards: Integration status, Credit Card, Ecommerce Product Variants, Task Assignment, Medical Appointment, and Revenue Statistics.",
     "filePath": "src/features/MessageComponentGallery/previews/DataCardsPreview.tsx"
   },
   {
@@ -536,6 +552,22 @@ export const galleryRegistry: GalleryEntry[] = [
     "badge": "Wizard Flow",
     "description": "Multi-step questionnaire flow matching shadcn Questionnaire specs. Features personal details, calendar session date & time picker, feature choices, progress bar, and summary view.",
     "filePath": "src/features/MessageComponentGallery/previews/QuestionnaireAndWizardPreviews.tsx"
+  },
+  {
+    "id": "date-picker-graphical",
+    "name": "Date Picker - Graphical & SwiftUI Style",
+    "category": "Date Picker",
+    "badge": "SwiftUI Style",
+    "description": "Interactive graphical inline calendar date picker matching Expo SwiftUI DatePicker specifications with highlighted selection ring, month navigation, and quick today trigger.",
+    "filePath": "src/components/ui/date-picker.tsx"
+  },
+  {
+    "id": "date-picker-wheel",
+    "name": "Date Picker - Wheel & Time Style",
+    "category": "Date Picker",
+    "badge": "Wheel Time",
+    "description": "iOS and Expo wheel-styled scrollable date & time selector featuring independent date, hour, minute, and AM/PM columns with live schedule readout.",
+    "filePath": "src/components/ui/date-picker.tsx"
   },
   {
     "id": "date-picker-simple",

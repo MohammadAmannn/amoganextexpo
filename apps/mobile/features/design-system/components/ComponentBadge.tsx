@@ -39,8 +39,8 @@ export function ComponentBadge({ category, badgeText }: ComponentBadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    height: 16,
-    paddingHorizontal: 6,
+    height: 18,
+    paddingHorizontal: 7,
     borderRadius: 9999,
     borderWidth: 1,
     flexDirection: 'row',
@@ -50,8 +50,9 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 9,
-    fontWeight: '600',
-    letterSpacing: 0.6,
+    fontWeight: '700',
+    letterSpacing: 0.5,
     lineHeight: 12,
+    fontFamily: 'Open Sans',
   },
 })

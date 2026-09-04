@@ -5,6 +5,12 @@ import { Telescope } from 'lucide-react-native'
 import { useTheme } from '@/providers/theme-provider'
 import { AppThemesPreview } from './previews/AppThemesPreview'
 import { PrimitivesShowcase } from './previews/PrimitivesShowcase'
+import { DatePickerPreviews } from './previews/DatePickerPreviews'
+import { CalendarPreviews } from './previews/CalendarPreviews'
+import { DataCardsPreviews } from './previews/DataCardsPreviews'
+import { WizardPreviews } from './previews/WizardPreviews'
+import { FilesPreviews } from './previews/FilesPreviews'
+import { ChatPreviews } from './previews/ChatPreviews'
 
 interface StagePreviewRendererProps {
   entry: GalleryEntry
@@ -16,6 +22,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
 
   // 1. Theme preview
   if (
+    entry.category === 'Theme' ||
     entry.id === 'app-themes-settings' ||
     entry.name === 'App Theme & Colors' ||
     entry.filePath.includes('themes-tab')
@@ -23,7 +30,67 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <AppThemesPreview />
   }
 
-  // 2. Primitives showcase
+  // 2. Date Picker preview
+  if (
+    entry.category === 'Date Picker' ||
+    entry.id.startsWith('date-picker-') ||
+    entry.name.toLowerCase().includes('date picker')
+  ) {
+    return <DatePickerPreviews entry={entry} />
+  }
+
+  // 3. Calendar preview
+  if (
+    entry.category === 'Calendar' ||
+    entry.id.startsWith('calendar-') ||
+    entry.name.toLowerCase().includes('calendar')
+  ) {
+    return <CalendarPreviews entry={entry} />
+  }
+
+  // 4. Data Cards preview
+  if (
+    entry.category === 'Data Cards' ||
+    entry.id.startsWith('card-') ||
+    entry.id === 'data-cards-overview' ||
+    entry.filePath.includes('DataCardsPreview')
+  ) {
+    return <DataCardsPreviews entry={entry} />
+  }
+
+  // 5. Wizards preview
+  if (
+    entry.category === 'Wizards' ||
+    entry.id.includes('wizard') ||
+    entry.filePath.includes('Wizard')
+  ) {
+    return <WizardPreviews entry={entry} />
+  }
+
+  // 6. Files preview
+  if (
+    entry.category === 'Files' ||
+    entry.id.startsWith('file-') ||
+    entry.id.startsWith('folder-') ||
+    entry.filePath.includes('files')
+  ) {
+    return <FilesPreviews entry={entry} />
+  }
+
+  // 7. Chat preview
+  if (
+    entry.category === 'Chat' ||
+    entry.id.startsWith('chat-') ||
+    entry.id.startsWith('message-') ||
+    entry.id.startsWith('typing-') ||
+    entry.id.startsWith('contact-') ||
+    entry.id.startsWith('group-') ||
+    entry.filePath.includes('chat')
+  ) {
+    return <ChatPreviews entry={entry} />
+  }
+
+  // 8. Primitives showcase
   if (
     entry.category === 'Primitives' ||
     entry.id.startsWith('primitive-') ||
@@ -32,7 +99,7 @@ export function StagePreviewRenderer({ entry }: StagePreviewRendererProps) {
     return <PrimitivesShowcase entry={entry} />
   }
 
-  // 3. Fallback coming soon
+  // 8. Fallback coming soon
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.centerContent}>

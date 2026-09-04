@@ -27,15 +27,16 @@ export function DesignSystemCard({
         isSelected
           ? {
               backgroundColor: isDark
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(99, 102, 241, 0.08)',
-              borderColor: colors.primary,
+                ? 'rgba(99, 102, 241, 0.14)'
+                : '#eef2ff',
             }
           : {
-              backgroundColor: isDark ? colors.card : '#ffffff',
-              borderColor: colors.border,
+              backgroundColor: pressed
+                ? isDark
+                  ? 'rgba(255, 255, 255, 0.04)'
+                  : 'rgba(0, 0, 0, 0.03)'
+                : 'transparent',
             },
-        pressed && { opacity: 0.8 },
       ]}
       accessibilityRole='button'
       accessibilityState={{ selected: isSelected }}
@@ -44,7 +45,7 @@ export function DesignSystemCard({
         <View
           style={[
             styles.indicatorBar,
-            { backgroundColor: colors.primary },
+            { backgroundColor: colors.primary || '#4f46e5' },
           ]}
         />
       )}
@@ -54,8 +55,8 @@ export function DesignSystemCard({
           style={[
             styles.nameText,
             {
-              color: isSelected ? colors.foreground : colors.foreground,
-              fontWeight: isSelected ? '700' : '500',
+              color: colors.foreground,
+              fontWeight: isSelected ? '500' : '400',
             },
           ]}
           numberOfLines={1}
@@ -79,21 +80,21 @@ const styles = StyleSheet.create({
   card: {
     position: 'relative',
     width: '100%',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 0,
     gap: 2,
     overflow: 'hidden',
+    justifyContent: 'center',
   },
   indicatorBar: {
     position: 'absolute',
     left: 0,
     top: 6,
     bottom: 6,
-    width: 3,
-    borderTopLeftRadius: 4,
-    borderBottomLeftRadius: 4,
+    width: 3.5,
+    borderRadius: 2,
   },
   headerRow: {
     flexDirection: 'row',
@@ -103,13 +104,15 @@ const styles = StyleSheet.create({
   },
   nameText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 13.5,
     lineHeight: 18,
     fontFamily: 'Open Sans',
+    letterSpacing: -0.2,
   },
   fileNameText: {
     fontSize: 11,
     lineHeight: 15,
     fontFamily: 'Open Sans',
+    marginTop: 1,
   },
 })

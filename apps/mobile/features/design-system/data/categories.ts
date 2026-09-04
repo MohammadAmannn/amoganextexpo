@@ -157,11 +157,11 @@ export const CATEGORY_COLORS: Record<string, CategoryColorStyle> = {
 export const CATEGORY_CONFIG: Record<GalleryCategory, CategoryConfigItem> = {
   All: {
     icon: LayoutGrid,
-    activeBg: 'rgba(16, 185, 129, 0.15)',
-    activeText: '#059669',
-    activeBorder: 'rgba(16, 185, 129, 0.3)',
-    badgeActiveBg: 'rgba(16, 185, 129, 0.25)',
-    badgeActiveText: '#047857',
+    activeBg: 'rgba(139, 92, 246, 0.12)',
+    activeText: '#7c3aed',
+    activeBorder: 'rgba(168, 85, 247, 0.5)',
+    badgeActiveBg: 'rgba(139, 92, 246, 0.25)',
+    badgeActiveText: '#7c3aed',
   },
   Wizards: {
     icon: Wand2,

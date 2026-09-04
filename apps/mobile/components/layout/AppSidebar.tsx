@@ -327,7 +327,7 @@ export function AppSidebar({
                         color: isActive
                           ? colors.primary || colors.foreground
                           : colors.mutedForeground,
-                        fontWeight: isActive ? '600' : '400',
+                        fontWeight: isActive ? '500' : '400',
                       },
                     ]}
                     numberOfLines={1}
@@ -405,7 +405,7 @@ export function AppSidebar({
                         color: isActive
                           ? colors.primary || colors.foreground
                           : colors.mutedForeground,
-                        fontWeight: isActive ? '600' : '400',
+                        fontWeight: isActive ? '500' : '400',
                       },
                     ]}
                     numberOfLines={1}
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
   },
   teamName: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#0f172a',
     lineHeight: 17,
     fontFamily: 'Open Sans',
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
   },
   groupHeader: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
     letterSpacing: 0.8,
     fontFamily: 'Open Sans',
   },

@@ -15,7 +15,53 @@ import {
   OpenSans_800ExtraBold,
 } from '@expo-google-fonts/open-sans'
 
+import { LogBox, Platform } from 'react-native'
 import { ThemeSettingsDrawer } from '@/components/theme/ThemeSettingsDrawer'
+
+LogBox.ignoreLogs([
+  'Failed to connect to MetaMask',
+  'MetaMask',
+  'chrome-extension://',
+])
+
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  const isExtensionError = (error: any, filename?: string) => {
+    const errorStr = String(error?.message || error?.stack || error || '')
+    const fileStr = String(filename || '')
+    return (
+      errorStr.includes('MetaMask') ||
+      errorStr.includes('chrome-extension://') ||
+      errorStr.includes('moz-extension://') ||
+      fileStr.includes('chrome-extension://') ||
+      fileStr.includes('moz-extension://') ||
+      fileStr.includes('inpage.js')
+    )
+  }
+
+  window.addEventListener(
+    'error',
+    (event) => {
+      if (isExtensionError(event.error, event.filename)) {
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+      }
+    },
+    true
+  )
+
+  window.addEventListener(
+    'unhandledrejection',
+    (event) => {
+      if (isExtensionError(event.reason)) {
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+      }
+    },
+    true
+  )
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({

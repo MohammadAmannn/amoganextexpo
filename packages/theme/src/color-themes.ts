@@ -553,7 +553,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'zinc',
     label: 'Zinc',
-    preview: 'oklch(0.208 0.042 265.755)',
+    preview: '#18181b',
     colors: ['#71717a', '#fafafa', '#18181b', '#a1a1aa', '#d4d4d8'],
     tokens: {
       light: {
@@ -581,7 +581,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'blue',
     label: 'Blue',
-    preview: 'oklch(0.546 0.245 262.881)',
+    preview: '#2563eb',
     colors: ['#2563eb', '#3b82f6', '#93c5fd', '#bfdbfe', '#1e40af'],
     tokens: simplePalette(
       'oklch(0.546 0.245 262.881)', 'oklch(0.546 0.245 262.881)',
@@ -595,7 +595,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'rose',
     label: 'Rose',
-    preview: 'oklch(0.585 0.22 3.717)',
+    preview: '#e11d48',
     colors: ['#e11d48', '#f43f5e', '#fda4af', '#fecdd3', '#9f1239'],
     tokens: simplePalette(
       'oklch(0.585 0.22 3.717)', 'oklch(0.585 0.22 3.717)',
@@ -609,7 +609,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'green',
     label: 'Green',
-    preview: 'oklch(0.527 0.154 150.069)',
+    preview: '#16a34a',
     colors: ['#16a34a', '#22c55e', '#86efac', '#bbf7d0', '#166534'],
     tokens: simplePalette(
       'oklch(0.527 0.154 150.069)', 'oklch(0.527 0.154 150.069)',
@@ -623,7 +623,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'orange',
     label: 'Orange',
-    preview: 'oklch(0.705 0.213 47.604)',
+    preview: '#f97316',
     colors: ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#c2410c'],
     tokens: {
       light: {
@@ -651,7 +651,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'violet',
     label: 'Violet',
-    preview: 'oklch(0.541 0.281 293.009)',
+    preview: '#7c3aed',
     colors: ['#7c3aed', '#8b5cf6', '#c4b5fd', '#ddd6fe', '#5b21b6'],
     tokens: simplePalette(
       'oklch(0.541 0.281 293.009)', 'oklch(0.541 0.281 293.009)',
@@ -665,7 +665,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'amber',
     label: 'Amber',
-    preview: 'oklch(0.769 0.172 70.67)',
+    preview: '#f59e0b',
     colors: ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#92400e'],
     tokens: {
       light: {
@@ -693,7 +693,7 @@ export const colorThemes: ColorThemeDefinition[] = [
   {
     name: 'teal',
     label: 'Teal',
-    preview: 'oklch(0.6 0.118 184.704)',
+    preview: '#14b8a6',
     colors: ['#14b8a6', '#2dd4bf', '#5eead4', '#99f6e4', '#115e59'],
     tokens: {
       light: {

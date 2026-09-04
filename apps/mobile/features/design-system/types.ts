@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 
 export type GalleryCategory =
   | 'All'
+  | 'Primitives'
   | 'Wizards'
   | 'Vouchers'
   | 'Kanban Board'

@@ -54,29 +54,12 @@ export function DesignSystemList({
     </View>
   )
 
-  const renderFooter = () => (
-    <View
-      style={[
-        styles.footerContainer,
-        {
-          borderTopColor: colors.border,
-          backgroundColor: isDark ? colors.card : colors.secondary,
-        },
-      ]}
-    >
-      <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-        shadcn/ui • TailwindCSS • React 19
-      </Text>
-    </View>
-  )
-
   return (
     <FlatList
       data={entries}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
       ListEmptyComponent={renderEmpty}
-      ListFooterComponent={entries.length > 0 ? renderFooter : null}
       contentContainerStyle={[
         styles.listContent,
         { backgroundColor: colors.background },
@@ -115,18 +98,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Open Sans',
     textDecorationLine: 'underline',
     fontWeight: '600',
-  },
-  footerContainer: {
-    marginTop: 8,
-    borderTopWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerText: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    textAlign: 'center',
   },
 })

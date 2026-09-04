@@ -27,15 +27,7 @@ export function CategoryFilter({
   const isDark = resolvedMode === 'dark'
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: isDark ? colors.card : colors.secondary,
-          borderBottomColor: colors.border,
-        },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: 'transparent' }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -51,6 +43,22 @@ export function CategoryFilter({
             const config = CATEGORY_CONFIG[cat]
             const IconComponent = config?.icon || LayoutGrid
 
+            const activeBg =
+              config?.activeBg ||
+              (isDark ? 'rgba(139, 92, 246, 0.15)' : 'rgba(139, 92, 246, 0.1)')
+            const activeBorder =
+              config?.activeBorder ||
+              (isDark ? 'rgba(168, 85, 247, 0.4)' : '#ddd6fe')
+            const activeColor =
+              config?.activeText ||
+              (isDark ? '#c084fc' : '#7c3aed')
+            const badgeBg =
+              config?.badgeActiveBg ||
+              (isDark ? 'rgba(139, 92, 246, 0.25)' : '#ede9fe')
+            const badgeColor =
+              config?.badgeActiveText ||
+              (isDark ? '#c084fc' : '#7c3aed')
+
             return (
               <Pressable
                 key={cat}
@@ -59,12 +67,12 @@ export function CategoryFilter({
                   styles.chip,
                   isActive
                     ? {
-                        backgroundColor: colors.primary,
-                        borderColor: colors.primary,
+                        backgroundColor: activeBg,
+                        borderColor: activeBorder,
                       }
                     : {
-                        backgroundColor: isDark ? colors.background : '#ffffff',
-                        borderColor: colors.border,
+                        backgroundColor: 'transparent',
+                        borderColor: isDark ? colors.border : '#e2e8f0',
                       },
                   pressed && styles.chipPressed,
                 ]}
@@ -73,21 +81,15 @@ export function CategoryFilter({
               >
                 <IconComponent
                   size={14}
-                  color={
-                    isActive
-                      ? colors.primaryForeground || '#ffffff'
-                      : colors.mutedForeground
-                  }
-                  strokeWidth={isActive ? 2.2 : 2}
+                  color={isActive ? activeColor : colors.mutedForeground}
+                  strokeWidth={isActive ? 2.2 : 1.9}
                 />
                 <Text
                   style={[
                     styles.chipLabel,
                     {
-                      color: isActive
-                        ? colors.primaryForeground || '#ffffff'
-                        : colors.foreground,
-                      fontWeight: isActive ? '700' : '500',
+                      color: isActive ? activeColor : colors.foreground,
+                      fontWeight: isActive ? '500' : '400',
                     },
                   ]}
                 >
@@ -98,7 +100,7 @@ export function CategoryFilter({
                     styles.badge,
                     {
                       backgroundColor: isActive
-                        ? 'rgba(255, 255, 255, 0.25)'
+                        ? badgeBg
                         : isDark
                         ? colors.secondary
                         : '#f1f5f9',
@@ -109,9 +111,8 @@ export function CategoryFilter({
                     style={[
                       styles.badgeText,
                       {
-                        color: isActive
-                          ? colors.primaryForeground || '#ffffff'
-                          : colors.mutedForeground,
+                        color: isActive ? badgeColor : colors.mutedForeground,
+                        fontWeight: '500',
                       },
                     ]}
                   >
@@ -129,14 +130,16 @@ export function CategoryFilter({
 
 const styles = StyleSheet.create({
   container: {
-    maxHeight: 130,
-    borderBottomWidth: 1,
+    maxHeight: 140,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
   },
   scrollView: {
-    maxHeight: 130,
+    maxHeight: 140,
   },
   scrollContent: {
-    padding: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   chipsWrap: {
     flexDirection: 'row',
@@ -149,8 +152,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
     borderWidth: 1,
   },
   chipPressed: {
@@ -165,13 +168,12 @@ const styles = StyleSheet.create({
   badge: {
     borderRadius: 9999,
     paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingVertical: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '600',
     fontFamily: 'Open Sans',
     lineHeight: 12,
   },
